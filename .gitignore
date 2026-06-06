@@ -1,0 +1,17 @@
+# Secrets und Konfiguration
+.env
+.env.*
+*.key
+
+# Lokale Ergänzung mit personenbezogenen Kontaktdaten
+CLAUDE.local.md
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Arbeitsdateien (nicht versioniert)
+workbench/

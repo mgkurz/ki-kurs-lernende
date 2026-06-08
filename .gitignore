@@ -13,5 +13,6 @@ CLAUDE.local.md
 .vscode/
 .idea/
 
-# Arbeitsdateien (nicht versioniert)
+# Privater Arbeitsbereich: bleibt lokal, wird nie versioniert oder veröffentlicht.
+# Greift in jeder Ebene, also auch in den Thementeil-Unterordnern.
 workbench/

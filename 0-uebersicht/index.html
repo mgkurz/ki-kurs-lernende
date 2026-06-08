@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Künstliche Intelligenz verstehen – Kursübersicht</title>
+<style>
+/* ============================================================
+   DESIGN-TOKENS (identisch zu den Modulen)
+   ============================================================ */
+:root{
+  --bg:#eef1f6;
+  --surface:#ffffff;
+  --ink:#16233a;
+  --text:#23324a;
+  --muted:#5c6b82;
+  --line:#d4dbe6;
+  --brand:#2456b8;
+  --brand-dark:#1b3f87;
+  --brand-soft:#e6eefc;
+  --brand-ink:#173a7a;
+  --accent:#6a4bbd;
+  --accent-soft:#ece6fa;
+  --radius:14px;
+  --radius-sm:9px;
+  --shadow:0 2px 14px rgba(22,35,58,.07);
+  --maxw:760px;
+  --tap:44px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  line-height:1.55;
+  font-size:16.5px;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:18px 16px 60px}
+
+/* Kopf */
+header.app-head{padding:6px 2px 14px}
+.eyebrow{font-size:13px;letter-spacing:.4px;text-transform:uppercase;color:var(--brand);font-weight:700}
+.app-head h1{font-size:25px;line-height:1.22;margin:4px 0 10px;color:var(--ink)}
+.lead{font-size:17px;color:var(--text);margin:0}
+
+/* Karten / Teile */
+h2{font-size:18px;margin:26px 0 10px;color:var(--ink)}
+.parts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.part{display:block;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:16px 18px;text-decoration:none;color:inherit;transition:.15s}
+a.part:hover{border-color:var(--brand);box-shadow:0 4px 20px rgba(22,35,58,.12);transform:translateY(-1px)}
+.part-top{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.part-no{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-weight:800;font-size:15px;background:var(--brand-soft);color:var(--brand-ink)}
+.part-title{font-size:17.5px;font-weight:700;color:var(--ink)}
+.part-desc{color:var(--muted);font-size:15px;margin:2px 0 0}
+.badge{margin-left:auto;flex:0 0 auto;font-size:12px;font-weight:700;letter-spacing:.3px;
+  text-transform:uppercase;padding:4px 10px;border-radius:30px}
+.badge-ready{background:var(--brand-soft);color:var(--brand-ink)}
+.badge-wip{background:var(--accent-soft);color:var(--accent)}
+.part.soon{opacity:.7;cursor:default}
+
+/* Footer / Recht */
+footer.app-foot{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted)}
+footer.app-foot a{color:var(--brand)}
+.legal-view{display:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px 18px;margin-top:14px;text-align:left;color:var(--text)}
+.legal-view:target{display:block}
+.legal-view h2{margin-top:0}
+.legal-back{display:inline-block;margin-top:10px;color:var(--brand);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app-head">
+    <p class="eyebrow">Grundlagenkurs</p>
+    <h1>Künstliche Intelligenz verstehen</h1>
+    <p class="lead">Ein interaktiver Kurs in vier Teilen: wie KI funktioniert, wo ihre Grenzen und Regeln liegen, wie man sie sinnvoll nutzt und was sie für die Arbeitswelt bedeutet. Jeder Teil ist eigenständig und dauert etwa 15 bis 25 Minuten.</p>
+  </header>
+
+  <h2>Die vier Teile</h2>
+  <ul class="parts">
+
+    <li>
+      <a class="part" href="1-wie-funktioniert-ki/">
+        <div class="part-top">
+          <span class="part-no">1</span>
+          <span class="part-title">Wie funktioniert KI?</span>
+          <span class="badge badge-ready">verfügbar</span>
+        </div>
+        <p class="part-desc">Das Wahrscheinlichkeitsmodell hinter Sprach-KI: Sie rechnet, sie versteht nicht. Warum KI überzeugend klingt und trotzdem irren kann.</p>
+      </a>
+    </li>
+
+    <li>
+      <div class="part soon">
+        <div class="part-top">
+          <span class="part-no">2</span>
+          <span class="part-title">Grenzen, Risiken und Recht</span>
+          <span class="badge badge-wip">in Arbeit</span>
+        </div>
+        <p class="part-desc">Bias, Deepfakes, Datenschutz und der EU AI Act: Was KI darf, was nicht, und wie man Risiken erkennt.</p>
+      </div>
+    </li>
+
+    <li>
+      <div class="part soon">
+        <div class="part-top">
+          <span class="part-no">3</span>
+          <span class="part-title">KI richtig nutzen</span>
+          <span class="badge badge-wip">in Arbeit</span>
+        </div>
+        <p class="part-desc">Gute Prompts schreiben, im Dialog nachsteuern, Assistent und Agent unterscheiden, Ergebnisse prüfen.</p>
+      </div>
+    </li>
+
+    <li>
+      <div class="part soon">
+        <div class="part-top">
+          <span class="part-no">4</span>
+          <span class="part-title">Zukunft, Transfer und Abschluss</span>
+          <span class="badge badge-wip">in Arbeit</span>
+        </div>
+        <p class="part-desc">KI und die Arbeitswelt von morgen, Übertrag in den eigenen Berufsalltag, Reflexion und Abschlusstest.</p>
+      </div>
+    </li>
+
+  </ul>
+
+  <footer class="app-foot">
+    <p><strong>Datenschutz:</strong> Diese Übersicht und alle Teile verarbeiten keine personenbezogenen Daten, laden keine externen Ressourcen, setzen keine Cookies und übertragen keine Daten an Dritte.</p>
+    <p><a href="#impressum">Impressum</a> · <a href="#datenschutz">Datenschutz im Detail</a> · Lerninhalt CC BY-SA 4.0</p>
+
+    <div class="legal-view" id="impressum">
+      <h2>Impressum</h2>
+      <p>Angaben gemäß den geltenden Vorschriften. Bitte von der verantwortlichen Stelle ausfüllen:</p>
+      <p>
+        [Name der Schule / verantwortliche Person]<br>
+        [Anschrift]<br>
+        [Kontakt: E-Mail / Telefon]<br>
+        [Verantwortlich für den Inhalt]
+      </p>
+      <p><strong>Herkunft und Lizenz:</strong> Dieser Kurs ist eine Bearbeitung des KI-Grundlagenkurses der Richard-Müller-Schule Fulda (Autorin: Marina Boonyaprasop-Meister). Die Autorin hat das Ausgangsmaterial unter CC BY-SA 4.0 freigegeben. Bearbeitung und Aufteilung in vier Teile: [verantwortliche Person, siehe oben]. Die Bearbeitung steht ebenfalls unter <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.de" target="_blank" rel="noopener">CC BY-SA 4.0</a>.</p>
+      <a class="legal-back" href="#">← Zurück zur Übersicht</a>
+    </div>
+
+    <div class="legal-view" id="datenschutz">
+      <h2>Datenschutz im Detail</h2>
+      <h3>Verantwortlicher</h3>
+      <p>[Name und Kontakt der verantwortlichen Person oder Institution, siehe Impressum]</p>
+      <h3>Welche Daten werden verarbeitet?</h3>
+      <p>Keine personenbezogenen Daten. Es gibt keine Cookies, kein Tracking, keine Analyse-Werkzeuge und keine externen Ressourcen. Alle Eingaben in den Modulen bleiben ausschließlich im Browser und werden mit dem Schließen der Seite gelöscht.</p>
+      <h3>Hosting und Datentransfer</h3>
+      <p>[Wahrheitsgemäß ergänzen, je nach Veröffentlichung. Beispiel bei GitHub Pages: „Diese Seite wird über GitHub Pages bereitgestellt. Beim Aufruf wird technisch bedingt deine IP-Adresse an den Hoster (ein US-Anbieter) übertragen, um die Seite auszuliefern."]</p>
+      <h3>Deine Rechte</h3>
+      <p>Dir stehen die Rechte auf Auskunft, Berichtigung und Löschung sowie ein Beschwerderecht bei der zuständigen Aufsichtsbehörde zu. In Hessen ist das der Hessische Beauftragte für Datenschutz und Informationsfreiheit.</p>
+      <a class="legal-back" href="#">← Zurück zur Übersicht</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

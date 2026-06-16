@@ -9,8 +9,9 @@ CLAUDE.local.md
 # macOS
 .DS_Store
 
-# Editor
-.vscode/
+# Editor: Verzeichnis ignorieren, aber geteilte Erweiterungs-Empfehlungen freigeben
+.vscode/*
+!.vscode/extensions.json
 .idea/
 
 # Privater Arbeitsbereich: bleibt lokal, wird nie versioniert oder veröffentlicht.

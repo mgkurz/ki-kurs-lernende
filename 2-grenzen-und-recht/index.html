@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grenzen, Risiken und Recht: Was darf KI? · KI verstehen, Teil 2</title>
+<style>
+/* ============================================================
+   DESIGN-TOKENS (eine Quelle der Wahrheit fuer Farben/Maße)
+   identisch zu Teil 1, damit alle Teile konsistent sind
+   ============================================================ */
+:root{
+  --bg:#eef1f6;
+  --surface:#ffffff;
+  --ink:#16233a;
+  --text:#23324a;
+  --muted:#5c6b82;
+  --line:#d4dbe6;
+  --brand:#2456b8;
+  --brand-dark:#1b3f87;
+  --brand-soft:#e6eefc;
+  --brand-ink:#173a7a;
+  --ok:#1f7a4d;
+  --ok-soft:#e3f4ea;
+  --err:#b5341f;
+  --err-soft:#fbe7e2;
+  --warn:#9a6700;
+  --warn-soft:#fbf1d8;
+  --accent:#6a4bbd;
+  --accent-soft:#ece6fa;
+  --radius:14px;
+  --radius-sm:9px;
+  --shadow:0 2px 14px rgba(22,35,58,.07);
+  --maxw:760px;
+  --tap:44px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  line-height:1.55;
+  font-size:16.5px;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:18px 16px 60px}
+
+/* KOPF + FORTSCHRITT */
+header.app-head{padding:6px 2px 14px}
+.eyebrow{font-size:13px;letter-spacing:.4px;text-transform:uppercase;color:var(--brand);font-weight:700}
+.app-head h1{font-size:23px;line-height:1.25;margin:4px 0 0;color:var(--ink)}
+.progress{display:flex;gap:6px;margin:16px 0 4px;flex-wrap:wrap}
+.progress-step{flex:1 1 0;min-width:30px;height:7px;border-radius:5px;background:var(--line);transition:background .25s}
+.progress-step.done{background:var(--brand)}
+.progress-step.current{background:var(--accent)}
+.progress-label{font-size:13px;color:var(--muted);margin-top:2px}
+
+/* KARTEN / PHASEN */
+.phase{display:none}
+.phase.active{display:block;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 20px;margin-bottom:16px}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--brand-ink);background:var(--brand-soft);padding:4px 10px;border-radius:30px;margin-bottom:10px}
+h2{font-size:21px;margin:2px 0 8px;color:var(--ink);line-height:1.3}
+h3{font-size:17px;margin:18px 0 6px;color:var(--ink)}
+h4{font-size:16px;margin:0 0 4px;color:var(--ink)}
+p{margin:9px 0}
+.lead{font-size:17px;color:var(--text)}
+.muted{color:var(--muted)}
+strong{color:var(--ink)}
+ul{margin:8px 0;padding-left:22px}
+li{margin:4px 0}
+
+/* BUTTONS */
+.btn-row{display:flex;align-items:center;gap:10px;margin-top:18px;flex-wrap:wrap}
+.spacer{flex:1}
+.btn{font:inherit;font-weight:600;border:none;border-radius:var(--radius-sm);padding:11px 18px;min-height:var(--tap);cursor:pointer;transition:background .15s,opacity .15s}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-dark)}
+.btn-primary:disabled{background:#aebacd;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--brand);border:1.5px solid var(--line)}
+.btn-ghost:hover{border-color:var(--brand);background:var(--brand-soft)}
+.btn-sec{background:var(--accent-soft);color:var(--accent)}
+.btn-sec:hover{filter:brightness(.97)}
+
+/* LERNZIELE + SELBSTEINSCHAETZUNG */
+.goal-list{list-style:none;padding:0;margin:8px 0}
+.goal-list li{display:flex;gap:9px;align-items:flex-start;margin:7px 0}
+.goal-list li::before{content:"›";color:var(--brand);font-weight:800;font-size:19px;line-height:1.3}
+.self{border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;margin:10px 0;background:#fafbfd}
+.self-q{font-weight:600;color:var(--ink);margin-bottom:8px;font-size:15.5px}
+.self-opts{display:flex;gap:8px;flex-wrap:wrap}
+.self-opt{flex:1 1 30%;min-width:120px;min-height:var(--tap);border:1.5px solid var(--line);background:#fff;border-radius:var(--radius-sm);padding:9px;cursor:pointer;font:inherit;font-size:14px;color:var(--text);transition:.15s}
+.self-opt:hover{border-color:var(--brand)}
+.self-opt.sel{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-ink);font-weight:600}
+.self-opt.s-sicher.sel{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.self-opt.s-unsicher.sel{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.self-opt.s-noch.sel{background:var(--err-soft);border-color:var(--err);color:var(--err)}
+.self-tip{font-size:13.5px;color:var(--accent);margin-top:6px;display:none}
+.self-tip.show{display:block}
+
+/* FEEDBACK-BOXEN */
+.fb{border-radius:var(--radius-sm);padding:11px 14px;margin:10px 0 0;font-size:15px;display:none}
+.fb.show{display:block}
+.fb.ok{background:var(--ok-soft);color:var(--ok);border:1px solid #b6e0c6}
+.fb.err{background:var(--err-soft);color:var(--err);border:1px solid #f0c4ba}
+.fb.info{background:var(--brand-soft);color:var(--brand-ink);border:1px solid #c4d6f5}
+.fb.tip{background:var(--accent-soft);color:var(--accent);border:1px solid #d3c7f0}
+
+/* INFO / MERK / FALL-BOXEN */
+.note{display:flex;gap:11px;background:var(--warn-soft);border:1px solid #ecd9a3;border-radius:var(--radius-sm);padding:12px 14px;margin:14px 0}
+.note .ic{font-size:20px;flex-shrink:0}
+.merk{background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:8px;padding:13px 15px;margin:14px 0;font-size:16px}
+.callout{background:#f4f7fc;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;margin:12px 0}
+.case{display:flex;gap:11px;background:var(--err-soft);border:1px solid #f0c4ba;border-radius:var(--radius-sm);padding:13px 15px;margin:14px 0}
+.case .ic{font-size:20px;flex-shrink:0}
+.case h4{color:var(--err);font-size:15px;margin:0 0 4px}
+.case p{margin:3px 0;font-size:14.5px;color:var(--text)}
+
+/* ENTSCHEIDEN (Steckt hier KI dahinter?) + WAHR/FALSCH-Stil */
+.count-line{font-size:13.5px;color:var(--muted);font-weight:600;margin:0 0 10px}
+.tf-item{border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;margin:10px 0;background:#fafbfd}
+.tf-q{font-size:15.5px;margin-bottom:9px;color:var(--text)}
+.tf-btns{display:flex;gap:8px}
+.tf-btn{flex:1;min-height:var(--tap);border:1.5px solid var(--line);background:#fff;border-radius:var(--radius-sm);font:inherit;font-weight:600;cursor:pointer;transition:.15s;color:var(--text)}
+.tf-btn:hover{border-color:var(--brand)}
+.tf-btn.sel{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-ink)}
+.tf-btn.right{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.tf-btn.wrong{background:var(--err-soft);border-color:var(--err);color:var(--err)}
+.tf-btn.dim{opacity:.5}
+
+/* FEHLER IM TEXT FINDEN */
+.find-text{font-size:16.5px;line-height:2;background:#fafbfd;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;margin:6px 0}
+.find-span{font:inherit;font-size:inherit;border:none;background:var(--brand-soft);color:var(--brand-ink);border-bottom:2px dotted var(--brand);border-radius:4px;padding:1px 5px;cursor:pointer;transition:.12s}
+.find-span:hover{background:#d4e2fb}
+.find-span.correct{background:var(--ok-soft);color:var(--ok);border-bottom:2px solid var(--ok)}
+.find-span.wrong{background:var(--err-soft);color:var(--err);border-bottom:2px solid var(--err)}
+.find-span:disabled{cursor:default}
+
+/* SINGLE-CHOICE (Vorhersage / Quiz / Risikoklassen-Buttons) */
+.opt-list{display:flex;flex-direction:column;gap:8px}
+.opt-btn{text-align:left;min-height:var(--tap);border:1.5px solid var(--line);background:#fff;border-radius:var(--radius-sm);padding:11px 13px;font:inherit;font-size:15px;cursor:pointer;transition:.15s;color:var(--text)}
+.opt-btn:hover{border-color:var(--brand);background:#f6f9fe}
+.opt-btn.sel{border-color:var(--brand);background:var(--brand-soft)}
+.opt-btn.cor{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);font-weight:600}
+.opt-btn.wrg{border-color:var(--err);background:var(--err-soft);color:var(--err)}
+.opt-btn:disabled{cursor:default}
+
+/* ZUORDNUNG (Tipp-zum-Zuordnen, touchfaehig) */
+.assign-hint{font-size:13.5px;color:var(--muted);margin:4px 0 8px}
+.bank{display:flex;flex-wrap:wrap;gap:8px;min-height:50px;padding:10px;border:1.5px dashed var(--line);border-radius:var(--radius-sm);background:#fafbfd;margin-bottom:12px}
+.bank.armed{border-color:var(--brand);background:var(--brand-soft)}
+.chip{min-height:var(--tap);border:1.5px solid var(--line);background:#fff;border-radius:30px;padding:8px 14px;font:inherit;font-size:14.5px;cursor:pointer;transition:.15s;color:var(--text)}
+.chip:hover{border-color:var(--brand)}
+.chip.sel{background:var(--brand);color:#fff;border-color:var(--brand)}
+.chip.cor{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.chip.wrg{background:var(--err-soft);border-color:var(--err);color:var(--err)}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.bins{grid-template-columns:1fr}}
+.bin{border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:12px;min-height:90px;background:#fff;transition:.15s}
+.bin.armed{border-color:var(--brand);background:var(--brand-soft);cursor:pointer}
+.bin-h{font-weight:700;color:var(--ink);font-size:15px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.bin-b{display:flex;flex-wrap:wrap;gap:8px}
+
+/* RISIKOKLASSEN-PYRAMIDE (Einordnen-zum-Lernen) */
+.pyramid{display:flex;flex-direction:column;align-items:center;gap:7px;margin:14px 0}
+.pyr-level{border-radius:10px;padding:10px 13px;color:#fff;box-shadow:var(--shadow);transition:.2s}
+.pyr-v{background:var(--err)}
+.pyr-h{background:var(--warn)}
+.pyr-b{background:var(--brand)}
+.pyr-m{background:var(--ok)}
+.pyr-label{font-weight:700;font-size:14.5px}
+.pyr-regel{font-size:12.5px;opacity:.94;margin-top:1px}
+.pyr-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pyr-chip{background:#fff;color:var(--ink);border-radius:20px;padding:4px 10px;font-size:12.5px;font-weight:600}
+.pyr-chip.shown{opacity:.8;font-style:italic;font-weight:500}
+.risk-now{border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;background:#fafbfd;margin-top:10px}
+.risk-q{font-weight:600;color:var(--ink);margin-bottom:4px}
+.risk-app{font-size:17px;color:var(--brand-ink);background:var(--brand-soft);border-radius:var(--radius-sm);padding:10px 12px;margin:8px 0 12px}
+
+/* SATZBAUSTEINE (Merksatz selbst bauen) */
+.sb-card{background:#fafbfd;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;margin:12px 0}
+.sb-sentence{font-size:16.5px;line-height:2.1;color:var(--ink)}
+.sb-gap{display:inline-block;min-width:96px;border-bottom:2px dashed var(--brand);text-align:center;color:var(--brand);font-weight:700;cursor:pointer;padding:1px 8px;border-radius:5px}
+.sb-gap.filled{border-bottom-style:solid;background:var(--brand-soft)}
+.sb-gap.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
+.sb-gap.no{color:var(--err);border-color:var(--err);background:var(--err-soft)}
+.sb-bank{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.sb-tile{min-height:var(--tap);border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:8px 14px;font:inherit;font-size:14.5px;cursor:pointer;transition:.15s;color:var(--text)}
+.sb-tile:hover{border-color:var(--brand)}
+.sb-tile.used{opacity:.32;pointer-events:none}
+
+/* AUFKLAPPBAR (details) */
+details.acc{border:1px solid var(--line);border-radius:var(--radius-sm);margin:10px 0;background:#fff;overflow:hidden}
+details.acc>summary{cursor:pointer;padding:13px 15px;min-height:var(--tap);font-weight:600;color:var(--ink);list-style:none;display:flex;align-items:center;gap:9px}
+details.acc>summary::-webkit-details-marker{display:none}
+details.acc>summary::after{content:"▾";margin-left:auto;color:var(--brand);transition:transform .2s}
+details.acc[open]>summary::after{transform:rotate(180deg)}
+.acc-body{padding:0 15px 14px}
+.mini-q{font-weight:600;color:var(--ink);margin:8px 0 6px;font-size:15px}
+
+/* SICHERUNG */
+.secure-banner{background:linear-gradient(120deg,var(--brand-soft),var(--accent-soft));border:1px solid #c9d3ee;border-radius:var(--radius);padding:18px 20px;margin-bottom:16px}
+.secure-banner h2{margin-top:0}
+.sec-progress-wrap{margin:14px 0 4px}
+.sec-progress-bar{height:9px;border-radius:6px;background:var(--line);overflow:hidden}
+.sec-progress-fill{height:100%;background:var(--ok);width:0;transition:width .4s}
+.sec-progress-txt{font-size:13.5px;color:var(--muted);margin-top:4px}
+.q-block{border:1px solid var(--line);border-radius:var(--radius-sm);padding:15px;margin:14px 0;background:#fff}
+.q-num{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--brand)}
+.q-text{font-size:16px;color:var(--ink);font-weight:600;margin:5px 0 11px}
+.tries{display:flex;gap:5px;align-items:center;margin-top:9px;font-size:13px;color:var(--muted)}
+.try-dot{width:11px;height:11px;border-radius:50%;background:var(--line)}
+.try-dot.used{background:var(--err)}
+
+/* ERGEBNISUEBERSICHT */
+.result{border:1px solid var(--line);border-radius:var(--radius);background:#fff;padding:20px;margin-top:8px}
+.result h3{margin-top:16px}
+.result-head{border-bottom:2px solid var(--brand);padding-bottom:8px;margin-bottom:6px}
+table.res{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+table.res th,table.res td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+table.res th{background:#f4f7fc;color:var(--ink)}
+.status-ok{color:var(--ok);font-weight:700}
+.status-no{color:var(--err);font-weight:700}
+.score-big{font-size:19px;font-weight:700;color:var(--ink);margin:10px 0}
+textarea.reflect{width:100%;min-height:74px;border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:11px;font:inherit;font-size:15px;resize:vertical}
+textarea.reflect:focus{outline:none;border-color:var(--brand)}
+.field-hint{font-size:12.5px;color:var(--muted);margin:4px 0 0}
+
+/* FOOTER + RECHTSANSICHTEN */
+footer.app-foot{margin-top:30px;border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:var(--muted)}
+footer.app-foot a{color:var(--brand);cursor:pointer}
+.legal-view{display:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-top:10px}
+.legal-view h2{font-size:19px}
+.legal-view h3{font-size:15px}
+.legal-view p,.legal-view li{font-size:14px;color:var(--text)}
+:target.legal-view{display:block}
+.legal-back{display:inline-block;margin-top:14px}
+
+/* BARRIEREFREIHEIT: Bewegung reduzieren */
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important;transition:none !important;scroll-behavior:auto !important}
+}
+
+/* DRUCK: nur Lernzettel (Ergebnisuebersicht) */
+@media print{
+  body{background:#fff;color:#000;font-size:12pt}
+  .wrap{max-width:100%;padding:0}
+  header.app-head,.progress,.progress-label,footer.app-foot,
+  .phase .btn-row,#print-controls,.no-print{display:none !important}
+  .phase{display:none !important}
+  #print-area{display:block !important}
+  .card,.result{box-shadow:none;border:none;padding:0;margin:0}
+  table.res{table-layout:fixed}
+  table.res th,table.res td{font-size:10.5pt;word-break:break-word}
+  @page{margin:16mm 14mm 14mm 20mm}
+  html,body{height:auto}
+  #print-area,.result{position:static}
+}
+#print-area{display:none}
+.print-lines{margin:6px 0 14px;font-size:11pt}
+.print-lines span{display:inline-block;border-bottom:1px solid #000;min-width:200px;margin-right:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="app-head">
+  <div class="eyebrow">Künstliche Intelligenz · Teil 2</div>
+  <h1>Grenzen, Risiken und Recht: Was darf KI?</h1>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+  <div class="progress-label" id="progress-label"></div>
+</header>
+
+<main>
+
+<!-- ===================== PHASE 0: HINFUEHRUNG ===================== -->
+<section class="phase active" id="p0" aria-labelledby="p0h">
+  <div class="card">
+    <span class="tag">Worum geht es</span>
+    <h2 id="p0h">Die KI kann viel. Aber darf sie auch alles?</h2>
+    <p class="lead">In Teil 1 hast du gesehen, wie eine KI funktioniert: Sie rechnet, sie versteht nicht. In diesem Teil geht es um die Folgen davon. Wo steckt KI überall drin? Wo irrt sie, wo verzerrt sie, was darfst du ihr anvertrauen? Und welche Regeln gibt der Staat vor?</p>
+    <div class="callout">
+      <strong>Warum das wichtig ist:</strong> Im Beruf entscheidest du mit, wofür KI eingesetzt wird und wofür nicht. Wer ihre Grenzen und die Rechtslage kennt, nutzt sie sicher. Wer sie nicht kennt, macht Fehler, die teuer werden können.
+    </div>
+
+    <h3>Das kannst du danach:</h3>
+    <ul class="goal-list" id="goal-list-intro"></ul>
+
+    <div class="note">
+      <span class="ic">🧭</span>
+      <div><strong>Erste Einschätzung.</strong> Kreuze ehrlich an, wie sicher du dich gerade fühlst. Das ist kein Test, es gibt kein Richtig oder Falsch. Am Ende vergleichst du, wie weit du gekommen bist.</div>
+    </div>
+    <div id="self-before"></div>
+
+    <div class="btn-row">
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="p0-next">Los geht es</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PHASE 1: KI IM ALLTAG (entscheiden) ===================== -->
+<section class="phase" id="p1" aria-labelledby="p1h">
+  <div class="card">
+    <span class="tag">Selbst entscheiden</span>
+    <h2 id="p1h">Steckt hier KI dahinter?</h2>
+    <p class="lead">KI ist viel häufiger im Spiel, als man denkt, oft ganz unbemerkt. Aber nicht jede Automatik ist KI. Entscheide bei jedem Beispiel selbst, <strong>bevor</strong> du die Auflösung siehst.</p>
+    <p class="assign-hint">Tipp: Eine KI hat aus vielen Daten gelernt. Etwas, das stur einer festen Regel folgt, ist keine KI.</p>
+    <p class="count-line" id="alltag-count"></p>
+    <div id="alltag-ui"></div>
+    <div class="fb" id="alltag-fb"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" data-back>← Zurück</button>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="p1-next" style="display:none">Weiter</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PHASE 2: HALLUZINATION (Fehler finden) ===================== -->
+<section class="phase" id="p2" aria-labelledby="p2h">
+  <div class="card">
+    <span class="tag">Risiko 1 · Erfundenes</span>
+    <h2 id="p2h">Wenn die KI Dinge erfindet</h2>
+    <p class="lead">Weil eine KI nur fortschreibt, was wahrscheinlich klingt, kann sie Angaben erfinden, die es gar nicht gibt. Das nennt man <strong>Halluzination</strong>. Das Tückische: Es klingt völlig glaubwürdig.</p>
+    <p>Eine Mitarbeiterin hat sich von einer KI diesen Produkttext schreiben lassen. <strong>Eine Angabe darin ist frei erfunden.</strong> Welche? Tippe sie an.</p>
+    <div class="find-text" id="fehler-ui"></div>
+    <div class="fb" id="fehler-fb"></div>
+    <div id="fehler-case" style="display:none"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" data-back>← Zurück</button>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="p2-next" style="display:none">Weiter</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PHASE 3: BIAS (Vorhersage) ===================== -->
+<section class="phase" id="p3" aria-labelledby="p3h">
+  <div class="card">
+    <span class="tag">Risiko 2 · Verzerrung</span>
+    <h2 id="p3h">Wenn die KI Vorurteile übernimmt</h2>
+    <p class="lead">Eine KI lernt aus ihren Trainingsdaten. Stecken in den Daten alte Muster, übernimmt sie diese, ohne es zu merken. Das heißt <strong>Bias</strong>, also Verzerrung.</p>
+    <div class="callout">
+      <strong>Die Situation:</strong> Ein Unternehmen lässt eine KI Bewerbungen vorsortieren. Trainiert wurde sie mit den Einstellungen der letzten 10 Jahre. In dieser Branche wurden fast nur Männer eingestellt.
+    </div>
+    <p><strong>Was glaubst du: Wen wird die KI bei neuen Bewerbungen bevorzugen?</strong></p>
+    <div class="opt-list" id="bias-ui"></div>
+    <div class="fb" id="bias-fb"></div>
+    <div id="bias-after" style="display:none">
+      <div id="bias-case"></div>
+      <h3>Sag es in eigenen Worten</h3>
+      <p class="muted" style="font-size:14px">Tippe die passenden Bausteine in die Lücken.</p>
+      <div id="sb-bias"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" data-back>← Zurück</button>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="p3-next" style="display:none">Weiter</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PHASE 4: DATENSCHUTZ (Zuordnen) ===================== -->
+<section class="phase" id="p4" aria-labelledby="p4h">
+  <div class="card">
+    <span class="tag">Risiko 3 · Datenschutz</span>
+    <h2 id="p4h">Was darf in die KI, was nicht?</h2>
+    <p class="lead">Alles, was du in eine KI eingibst, kann beim Anbieter landen, oft auf Servern außerhalb der EU. Manche Daten gehören da nicht hinein. Entscheide bei jeder Karte selbst.</p>
+    <p class="assign-hint">Karte antippen, dann die passende Spalte antippen. Eine falsch einsortierte Karte kannst du erneut antippen, um sie zurückzulegen.</p>
+    <div id="ds-bank" class="bank"></div>
+    <div class="bins">
+      <div class="bin" data-cat="darf">
+        <div class="bin-h">✅ Darf in die KI</div>
+        <div class="bin-b" id="bin-darf"></div>
+      </div>
+      <div class="bin" data-cat="nicht">
+        <div class="bin-h">⛔ Darf nicht hinein</div>
+        <div class="bin-b" id="bin-nicht"></div>
+      </div>
+    </div>
+    <div class="fb" id="ds-fb"></div>
+    <div class="btn-row">
+      <button class="btn btn-sec" id="ds-check" disabled>Auswerten</button>
+    </div>
+
+    <div id="ds-case" style="display:none"></div>
+
+    <details class="acc" id="vertiefung-block" style="display:none">
+      <summary><span>🔎</span> Mehr Gefahren erkennen (freiwillige Vertiefung)</summary>
+      <div class="acc-body" id="vertiefung-ui"></div>
+    </details>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" data-back>← Zurück</button>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="p4-next" style="display:none">Weiter zu den Regeln</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PHASE 5: EU AI ACT (Einordnen-zum-Lernen) ===================== -->
+<section class="phase" id="p5" aria-labelledby="p5h">
+  <div class="card">
+    <span class="tag">Die Spielregeln</span>
+    <h2 id="p5h">Der EU AI Act: vier Risikoklassen</h2>
+    <p class="lead">Die EU regelt KI nach dem Risiko für Menschen. Je größer die möglichen Folgen, desto strenger die Regeln. Du lernst die vier Klassen, indem du Anwendungen <strong>selbst einordnest</strong>. Die Regel erschließt sich dabei von allein.</p>
+
+    <div class="pyramid" id="pyramid" aria-label="Risikoklassen-Pyramide des EU AI Act"></div>
+
+    <div class="risk-now" id="risk-now"></div>
+    <div class="fb" id="risk-fb"></div>
+
+    <div id="risk-done" style="display:none">
+      <div class="merk" id="risk-regel"></div>
+      <div class="note">
+        <span class="ic">🏷️</span>
+        <div><strong>Transparenzpflicht.</strong> Anwendungen mit begrenztem Risiko, etwa ein Chatbot oder ein KI-Werbebild, sind erlaubt, müssen aber gekennzeichnet sein. Menschen müssen erkennen können, dass sie es mit KI zu tun haben oder dass ein Inhalt von KI stammt.</div>
+      </div>
+      <h3>Sag es in eigenen Worten</h3>
+      <p class="muted" style="font-size:14px">Tippe die passenden Bausteine in die Lücken.</p>
+      <div id="sb-airisk"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" data-back>← Zurück</button>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="p5-next" style="display:none">Zur Sicherung</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PHASE 6: SICHERUNG ===================== -->
+<section class="phase" id="p6" aria-labelledby="p6h">
+  <div class="secure-banner">
+    <h2 id="p6h">📝 Sicherung: Was ist hängengeblieben?</h2>
+    <p style="margin-bottom:0">Diese Übung wird <strong>nicht benotet</strong>. Sie hilft dir zu sehen, was schon sitzt. Fehler sind hier völlig in Ordnung, du hast je Aufgabe drei Versuche und bekommst dazwischen Hilfen.</p>
+    <div class="sec-progress-wrap">
+      <div class="sec-progress-bar"><div class="sec-progress-fill" id="sec-fill"></div></div>
+      <div class="sec-progress-txt" id="sec-txt">0 von 0 bearbeitet</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag">Aufwärmen</span>
+    <h3 style="margin-top:2px">Erst selbst formulieren</h3>
+    <p>Bevor es ins Quiz geht: Bau diesen Merksatz aus den Bausteinen.</p>
+    <div id="sb-warmup"></div>
+  </div>
+
+  <div class="card">
+    <div id="secure-ui"></div>
+  </div>
+
+  <!-- Zweite Selbsteinschaetzung -->
+  <div class="card" id="self-after-card" style="display:none">
+    <span class="tag">Wo stehst du jetzt?</span>
+    <h2>Vergleiche mit deinem Start</h2>
+    <p>Schätze dich noch einmal ein. So siehst du selbst, wie weit du gekommen bist. Auch das ist kein Test.</p>
+    <div id="self-after"></div>
+  </div>
+
+  <!-- Reflexion -->
+  <div class="card" id="reflect-card" style="display:none">
+    <span class="tag">Freiwillig</span>
+    <h2>Kurz nachgedacht</h2>
+    <p>Beantworte gern, musst du aber nicht. Die Antworten bleiben nur in deinem Browser.</p>
+    <h3 style="font-size:15px">Nenne ein Risiko von KI, auf das du ab jetzt achten willst.</h3>
+    <textarea class="reflect" id="reflect1" aria-describedby="reflect-hint1" placeholder="Ich achte ab jetzt auf ..."></textarea>
+    <p class="field-hint" id="reflect-hint1">Gib hier keine persönlichen Daten ein, also keinen Namen und keine Adresse.</p>
+    <h3 style="font-size:15px">Wo bist du noch unsicher?</h3>
+    <textarea class="reflect" id="reflect2" aria-describedby="reflect-hint2" placeholder="Noch unklar ist mir ..."></textarea>
+    <p class="field-hint" id="reflect-hint2">Gib hier keine persönlichen Daten ein, also keinen Namen und keine Adresse.</p>
+  </div>
+
+  <!-- Abschluss-Check -->
+  <div class="card" id="check-card" style="display:none">
+    <span class="tag">Abschluss-Check</span>
+    <h2>Sitzt es wirklich?</h2>
+    <p>Zwei neue Situationen, <strong>ein Versuch, ohne Hilfen</strong>. So siehst du ehrlich, ob du es selbstständig anwenden kannst. Auch das zählt nur für dich.</p>
+    <div id="check-ui"></div>
+    <div class="btn-row">
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="check-submit" disabled>Auswerten und Lernzettel erstellen</button>
+    </div>
+  </div>
+
+  <!-- Ergebnisuebersicht -->
+  <div id="result-card" style="display:none">
+    <div class="card" id="print-controls">
+      <span class="tag">Geschafft</span>
+      <h2>Dein Lernzettel</h2>
+      <p>Hier ist deine Übersicht. Du kannst sie ausdrucken oder als Markdown-Datei speichern, etwa um damit weiterzuarbeiten.</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-print">🖨 Lernzettel drucken</button>
+        <button class="btn btn-sec" id="btn-md">📥 Als Markdown speichern</button>
+        <div class="spacer"></div>
+        <button class="btn btn-ghost" id="btn-restart">Von vorn beginnen</button>
+      </div>
+    </div>
+    <div class="result" id="result-body"></div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===================== DRUCKBEREICH (nur fuer @media print) ===================== -->
+<div id="print-area"></div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="app-foot">
+  <p><strong>Datenschutz:</strong> Diese Lernumgebung verarbeitet keine personenbezogenen Daten, lädt keine externen Ressourcen, setzt keine Cookies und überträgt keine Daten an Dritte. Alle Eingaben bleiben lokal in deinem Browser und sind nach dem Schließen der Seite verloren. Bitte gib in den Eingabefeldern trotzdem keine persönlichen Daten ein.</p>
+  <p><a href="#impressum">Impressum</a> · <a href="#datenschutz">Datenschutz im Detail</a> · Lerninhalt CC BY-SA 4.0</p>
+
+  <div class="legal-view" id="impressum">
+    <h2>Impressum</h2>
+    <p>Angaben gemäß den geltenden Vorschriften. Bitte von der verantwortlichen Stelle ausfüllen:</p>
+    <p>
+      [Name der Schule / verantwortliche Person]<br>
+      [Anschrift]<br>
+      [Kontakt: E-Mail / Telefon]<br>
+      [Verantwortlich für den Inhalt]
+    </p>
+    <p><strong>Inhaltlicher Hinweis:</strong> Lernmodul zu Grenzen, Risiken und Recht von KI (Teil 2 des Grundlagenkurses). Erstellt für den Unterricht in der Sekundarstufe II (allgemeinbildende Oberstufe und Berufsschule).</p>
+    <p><strong>Herkunft und Lizenz:</strong> Dieses Modul ist eine Bearbeitung von Inhalten des KI-Grundlagenkurses der Richard-Müller-Schule Fulda (Autorin: Marina Boonyaprasop-Meister). Die Autorin hat das Ausgangsmaterial unter CC BY-SA 4.0 freigegeben. Bearbeitung, Aufteilung und Gestaltung dieses Moduls: [verantwortliche Person, siehe oben]. Die Bearbeitung steht ebenfalls unter <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.de" target="_blank" rel="noopener">CC BY-SA 4.0</a>.</p>
+    <a class="legal-back" href="#">← Zurück zum Modul</a>
+  </div>
+
+  <div class="legal-view" id="datenschutz">
+    <h2>Datenschutz im Detail</h2>
+    <h3>Verantwortlicher</h3>
+    <p>[Name und Kontakt der verantwortlichen Person oder Institution, siehe Impressum]</p>
+    <h3>Welche Daten verarbeitet diese Lernumgebung?</h3>
+    <p>Keine personenbezogenen Daten. Es gibt keine Cookies, kein Tracking, keine Analyse-Werkzeuge und keine externen Ressourcen (keine fremden Schriften, Skripte, Bilder oder Videos). Alle Eingaben, etwa Antworten oder Reflexionstexte, bleiben ausschließlich in deinem Browser und werden mit dem Schließen der Seite gelöscht. Es findet keine Übertragung an einen Server oder an Dritte statt.</p>
+    <h3>Hosting und Datentransfer</h3>
+    <p>[Wahrheitsgemäß ergänzen, je nach Veröffentlichung. Beispiel bei GitHub Pages: „Diese Seite wird über GitHub Pages bereitgestellt. Beim Aufruf wird technisch bedingt deine IP-Adresse an den Hoster (ein US-Anbieter) übertragen, um die Seite auszuliefern." Bei einem Schul- oder EU-Server stattdessen diesen beschreiben.]</p>
+    <h3>Deine Rechte</h3>
+    <p>Dir stehen die Rechte auf Auskunft, Berichtigung und Löschung sowie ein Beschwerderecht bei der zuständigen Aufsichtsbehörde zu. In Hessen ist das der Hessische Beauftragte für Datenschutz und Informationsfreiheit.</p>
+    <p class="muted">Dies ist eine fachliche Orientierung, kein anwaltlicher Rat. Im Zweifel wende dich an die zuständige Stelle deiner Schule oder Schulbehörde.</p>
+    <a class="legal-back" href="#">← Zurück zum Modul</a>
+  </div>
+</footer>
+
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   INHALTE (Daten getrennt von Darstellung)
+   ============================================================ */
+
+const META = {
+  thema: "Grenzen, Risiken und Recht: Was darf KI?",
+  merksaetze: [
+    "KI steckt unbemerkt in vielen Alltags- und Berufsanwendungen. Aber nicht jede Automatik ist KI: Eine feste Regel (Taschenrechner, Summenformel) lernt nichts aus Daten.",
+    "Eine KI kann Angaben frei erfinden (Halluzination), weil sie nur Wahrscheinliches fortschreibt. Ergebnisse darum immer gegenprüfen.",
+    "Eine KI übernimmt Verzerrungen aus ihren Trainingsdaten (Bias). Sie ist nicht automatisch neutral.",
+    "Keine personenbezogenen oder vertraulichen Daten in eine KI eingeben.",
+    "Der EU AI Act ordnet KI vier Risikoklassen zu: je schwerer die möglichen Folgen für Menschen, desto strenger die Regeln.",
+    "KI-Inhalte wie Chatbots oder Werbebilder müssen erkennbar gekennzeichnet sein (Transparenzpflicht)."
+  ]
+};
+
+const LERNZIELE = [
+  { id:"lz1", text:"Ich kann an Beispielen zeigen, dass KI in Alltag und Beruf oft unbemerkt im Einsatz ist, und sie von festen Regeln unterscheiden." },
+  { id:"lz2", text:"Ich kann typische Risiken von KI erkennen und erklären, etwa erfundene Angaben und Verzerrung." },
+  { id:"lz3", text:"Ich kann begründen, welche Daten ich einer KI geben darf und welche nicht." },
+  { id:"lz4", text:"Ich kann KI-Anwendungen den vier Risikoklassen des EU AI Act zuordnen." },
+  { id:"lz5", text:"Ich kann erklären, wann KI-Inhalte gekennzeichnet werden müssen." }
+];
+
+// Phase 1: Steckt hier KI dahinter? (istKI: true = KI, false = feste Regel)
+const ALLTAG = [
+  { text:"Ein Musikdienst schlägt dir neue Lieder vor, die dir gefallen könnten.", istKI:true,
+    why:"KI. Sie hat aus deinem Hörverhalten und dem von Millionen anderen gelernt, was zusammenpasst." },
+  { text:"Ein Taschenrechner zeigt dir das Ergebnis von 47 + 58.", istKI:false,
+    why:"Keine KI. Das ist eine feste Rechenregel, die immer gleich abläuft. Nichts wird aus Daten gelernt." },
+  { text:"Der Social-Media-Feed sortiert, welche Beiträge du zuerst siehst.", istKI:true,
+    why:"KI. Sie schätzt aus deinem Verhalten, was dich am längsten hält, und ordnet danach." },
+  { text:"Ein Tabellenprogramm bildet die Summe einer Zahlenspalte.", istKI:false,
+    why:"Keine KI. Die Summenformel folgt einer festen Vorschrift. Sie lernt nichts und entscheidet nichts." },
+  { text:"Das Navi schlägt bei Stau spontan eine andere Route vor.", istKI:true,
+    why:"KI. Sie wertet laufend Verkehrsdaten aus und schätzt die schnellste Strecke." },
+  { text:"Der Spamfilter sortiert Werbemails automatisch aus.", istKI:true,
+    why:"KI, und zwar erkennende KI. Sie hat aus vielen Mails gelernt, was nach Spam aussieht." },
+  { text:"Ein Wecker klingelt um 7:00 Uhr, weil du die Zeit gestellt hast.", istKI:false,
+    why:"Keine KI. Er führt stur eine eingestellte Uhrzeit aus, ohne irgendetwas zu lernen." },
+  { text:"Ein Onlineshop zeigt dir „Das könnte dir auch gefallen“.", istKI:true,
+    why:"KI. Sie schließt aus dem Verhalten vieler Kundinnen und Kunden auf passende Produkte." },
+  { text:"Eine Software sortiert eingehende Bewerbungen automatisch vor.", istKI:true,
+    why:"KI. Sie bewertet Bewerbungen nach Mustern aus früheren Einstellungen. Genau hier lauert auch Bias." },
+  { text:"Ein Programm prüft ein Röntgenbild auf Anzeichen für einen Bruch.", istKI:true,
+    why:"KI. Sie hat aus vielen markierten Bildern gelernt, verdächtige Stellen zu erkennen." }
+];
+
+// Phase 2: Halluzination, Fehler im Text finden.
+// segmente: Strings sind Text, Objekte sind anklickbare Kandidaten.
+const FEHLER = {
+  segmente: [
+    "Unser Bürostuhl „Aktiv-S“ ist stufenlos höhenverstellbar, trägt bis ",
+    { text:"120 kg", correct:false, why:"Eine plausible, übliche Traglast. So etwas lässt sich am Datenblatt leicht prüfen." },
+    ", ist nach der ",
+    { text:"EU-Norm EN 14943-2", correct:true, why:"Treffer. Diese Norm gibt es nicht. Die KI hat eine echt klingende Normnummer einfach erfunden, weil sie plausibel ins Muster passt." },
+    " geprüft, wird seit ",
+    { text:"2019", correct:false, why:"Eine plausible Jahreszahl, im Unternehmen leicht nachzuprüfen." },
+    " gefertigt und wurde bereits über ",
+    { text:"50.000 Mal", correct:false, why:"Eine plausible Verkaufszahl. Sie lässt sich an den eigenen Verkaufsdaten kontrollieren." },
+    " verkauft."
+  ],
+  realfall: {
+    titel:"Echter Fall: erfundene Gerichtsurteile",
+    text:"2023 reichte ein Anwalt in New York (Fall Mata gegen Avianca) einen Schriftsatz ein, den ChatGPT mitgeschrieben hatte. Darin standen sechs Gerichtsurteile, die es nie gegeben hat. Die KI hatte sie überzeugend erfunden. Das Gericht verhängte eine Geldstrafe."
+  }
+};
+
+// Phase 3: Bias, Vorhersage
+const BIAS = {
+  optionen: [
+    { text:"Eher männliche Bewerber", correct:true },
+    { text:"Eher weibliche Bewerberinnen", correct:false },
+    { text:"Niemanden, eine KI ist immer neutral", correct:false }
+  ],
+  aufloesung:"Die KI bevorzugt systematisch Männer. Sie hat aus den Daten gelernt: „erfolgreich eingestellt“ hing dort oft mit „männlich“ zusammen. Dieses alte Muster schreibt sie blind fort. Sie merkt das nicht und gleicht es nicht aus.",
+  realfall: {
+    titel:"Echter Fall: Amazon stoppt sein KI-Tool",
+    text:"Amazon testete um 2018 eine KI zur Bewerbervorauswahl. Sie benachteiligte Frauen, zum Beispiel bei Lebensläufen mit dem Wort „Frauen“. Grund waren die Trainingsdaten aus einer männerdominierten Vergangenheit. Amazon zog das Werkzeug zurück."
+  }
+};
+
+// Phase 4: Datenschutz, Zuordnen (cat: "darf" | "nicht")
+const DSITEMS = [
+  { id:"d1", text:"Eine öffentliche Produktbeschreibung von der Firmenwebsite", cat:"darf" },
+  { id:"d2", text:"Ein allgemeiner Textentwurf ohne persönliche Angaben", cat:"darf" },
+  { id:"d3", text:"Einen Fachbegriff nachschlagen lassen", cat:"darf" },
+  { id:"d4", text:"Name und Adresse einer Kundin", cat:"nicht" },
+  { id:"d5", text:"Interne Umsatzzahlen des Unternehmens", cat:"nicht" },
+  { id:"d6", text:"Die Krankmeldung einer Kollegin", cat:"nicht" }
+];
+const DS_NAME = { darf:"Darf in die KI", nicht:"Darf nicht hinein" };
+const DS_CASE = {
+  titel:"Echter Fall: Samsung verbietet ChatGPT",
+  text:"2023 gaben Beschäftigte bei Samsung vertraulichen Programmcode und interne Notizen in ChatGPT ein, um sich helfen zu lassen. Die Daten lagen damit beim Anbieter. Samsung untersagte die Nutzung daraufhin intern. Faustregel: Was nicht an die Öffentlichkeit darf, gehört nicht in eine KI."
+};
+
+// Phase 4: optionale Vertiefung (Akkordeon mit Mini-Quiz)
+const VERTIEFUNG = [
+  {
+    icon:"🎭", titel:"Deepfakes: gefälschte Bilder, Stimmen, Videos",
+    text:"KI kann Gesichter, Stimmen und ganze Videos täuschend echt fälschen. Das wird für Betrug und für politische Manipulation genutzt, etwa um Personen Dinge sagen zu lassen, die sie nie gesagt haben.",
+    quiz:{ frage:"Was ist bei einem überraschenden Video einer bekannten Person ratsam?",
+      optionen:[
+        { text:"Quelle prüfen und auf seriöse Bestätigung warten, bevor man es glaubt oder teilt.", correct:true },
+        { text:"Sofort teilen, Videos kann man nicht fälschen.", correct:false },
+        { text:"Daran glauben, wenn die Person echt aussieht.", correct:false }
+      ], loesung:"Bilder, Stimmen und Videos lassen sich heute fälschen. Erst prüfen, dann glauben oder teilen." }
+  },
+  {
+    icon:"🪤", titel:"KI-Betrug im Alltag",
+    text:"Betrügerinnen und Betrüger nutzen KI für gefälschte Anrufe (eine geklonte Stimme bittet um Geld), täuschend echte Phishing-Mails oder erfundene Profile.",
+    quiz:{ frage:"Ein „Vorgesetzter“ bittet dich per Nachricht dringend um eine Überweisung. Was tust du?",
+      optionen:[
+        { text:"Über einen zweiten, sicheren Weg rückfragen, etwa persönlich oder per bekannter Nummer.", correct:true },
+        { text:"Sofort überweisen, es ist ja der Chef.", correct:false },
+        { text:"Einfach auf die Nachricht antworten und nachfragen.", correct:false }
+      ], loesung:"Bei Geld- oder Datenforderungen immer über einen unabhängigen, bekannten Weg rückversichern." }
+  },
+  {
+    icon:"💬", titel:"KI als Freund oder Partner (AI Companion)",
+    text:"Manche Apps bieten KI als Gesprächspartner oder sogar Partner an. Das kann sich echt anfühlen, ist aber kein Mensch: Die KI berechnet Antworten, sie hat keine Gefühle und kein Verständnis.",
+    quiz:{ frage:"Was stimmt über eine KI als Gesprächspartner?",
+      optionen:[
+        { text:"Sie berechnet Antworten und ersetzt keine echten Menschen.", correct:true },
+        { text:"Sie empfindet echte Zuneigung wie ein Mensch.", correct:false },
+        { text:"Sie versteht dich besser als jeder Mensch.", correct:false }
+      ], loesung:"Eine KI wirkt zugewandt, rechnet aber nur. Echte Beziehungen zu Menschen kann sie nicht ersetzen." }
+  }
+];
+
+// Phase 5: EU AI Act, Risikoklassen
+const RISIKO_KLASSEN = [
+  { key:"verboten", label:"Verboten", cls:"pyr-v", w:58, regel:"Unannehmbares Risiko, komplett untersagt.",
+    lang:"Verboten (unannehmbares Risiko): Diese Anwendungen sind so gefährlich für Grundrechte, dass sie ganz untersagt sind." },
+  { key:"hoch", label:"Hohes Risiko", cls:"pyr-h", w:72, regel:"Strenge Auflagen, menschliche Aufsicht.",
+    lang:"Hohes Risiko: erlaubt, aber nur mit strengen Auflagen, Dokumentation und menschlicher Aufsicht, weil es um wichtige Lebenschancen geht." },
+  { key:"begrenzt", label:"Begrenztes Risiko", cls:"pyr-b", w:86, regel:"Erlaubt, aber Transparenzpflicht.",
+    lang:"Begrenztes Risiko: erlaubt, aber mit Transparenzpflicht. Menschen müssen erkennen, dass KI im Spiel ist." },
+  { key:"minimal", label:"Minimales Risiko", cls:"pyr-m", w:100, regel:"Keine besonderen Auflagen.",
+    lang:"Minimales Risiko: harmlose Anwendungen ohne besondere Auflagen." }
+];
+const RISIKO_APPS = [
+  { id:"r1", text:"Staatliches Bewerten aller Bürger nach Wohlverhalten (Social Scoring)", cat:"verboten",
+    why:"Das greift tief in Grundrechte ein und ist in der EU verboten." },
+  { id:"r2", text:"Eine Kamera erkennt die Gefühle von Beschäftigten am Arbeitsplatz", cat:"verboten",
+    why:"Emotionserkennung von Beschäftigten am Arbeitsplatz ist verboten." },
+  { id:"r3", text:"Eine KI wählt Bewerberinnen und Bewerber für einen Job aus", cat:"hoch",
+    why:"Es geht um die berufliche Zukunft von Menschen, daher hohes Risiko mit strengen Auflagen." },
+  { id:"r4", text:"Eine KI entscheidet über die Vergabe eines Kredits mit", cat:"hoch",
+    why:"Eine Fehlentscheidung trifft Menschen hart, daher hohes Risiko." },
+  { id:"r5", text:"Ein Chatbot beantwortet Fragen im Kundenservice", cat:"begrenzt",
+    why:"Eher harmlos, aber die Kundschaft muss erkennen, dass sie mit KI schreibt. Transparenzpflicht." },
+  { id:"r6", text:"Eine KI erzeugt ein Werbebild für den Onlineshop", cat:"begrenzt",
+    why:"Erlaubt, aber das Bild muss als KI-generiert gekennzeichnet sein. Transparenzpflicht." },
+  { id:"r7", text:"Ein Spamfilter sortiert Werbemails aus", cat:"minimal",
+    why:"Harmlos, keine besonderen Auflagen." },
+  { id:"r8", text:"Ein Onlineshop empfiehlt passende Produkte", cat:"minimal",
+    why:"Harmlos, keine besonderen Auflagen." }
+];
+
+// Satzbausteine (Merksatz selbst bauen). bausteine = richtige Loesungen + Distraktoren.
+const SATZBAU = {
+  bias: {
+    segmente:[ "Eine KI ist nicht automatisch ", {g:0}, ". Sie übernimmt ", {g:1}, " aus ihren Trainingsdaten." ],
+    luecken:[ {loesung:"neutral"}, {loesung:"Verzerrungen"} ],
+    bausteine:["neutral","Verzerrungen","schlauer","Gefühle"]
+  },
+  airisk: {
+    segmente:[ "Je ", {g:0}, " die möglichen Folgen für Menschen sind, desto ", {g:1}, " sind die Regeln des EU AI Act." ],
+    luecken:[ {loesung:"schwerer"}, {loesung:"strenger"} ],
+    bausteine:["schwerer","strenger","kleiner","lockerer"]
+  },
+  warmup: {
+    segmente:[ "Nicht jede Automatik ist KI: Ein ", {g:0}, " folgt einer festen Regel, eine KI ", {g:1}, " aus Daten." ],
+    luecken:[ {loesung:"Taschenrechner"}, {loesung:"lernt"} ],
+    bausteine:["Taschenrechner","lernt","Chatbot","rät"]
+  }
+};
+
+// Sicherung: Multiple-Choice mit gestuften Hilfen
+const SICHERUNG = [
+  {
+    frage:"Warum kann eine KI etwas völlig Falsches behaupten und dabei überzeugend klingen?",
+    optionen:[
+      { text:"Weil sie das Wahrscheinliche fortschreibt und nicht auf Wahrheit prüft.", correct:true },
+      { text:"Weil sie absichtlich lügt.", correct:false },
+      { text:"Weil das Internet gerade langsam ist.", correct:false }
+    ],
+    hinweise:[
+      "Denk an Teil 1: Prüft die KI, was wahr ist, oder was wahrscheinlich ist?",
+      "Eine flüssige, plausibel klingende Fortsetzung ist nicht dasselbe wie eine richtige."
+    ],
+    loesung:"Die KI wählt eine wahrscheinlich klingende Fortsetzung. Klingt etwas plausibel, heißt das nicht, dass es stimmt. So entstehen erfundene Angaben (Halluzinationen)."
+  },
+  {
+    frage:"Eine KI benachteiligt bei der Bewerbervorauswahl systematisch eine Gruppe. Woran liegt das meistens?",
+    optionen:[
+      { text:"An verzerrten Trainingsdaten, deren altes Muster die KI übernimmt (Bias).", correct:true },
+      { text:"Daran, dass die KI bewusst unfair sein will.", correct:false },
+      { text:"Daran, dass eine KI grundsätzlich neutral ist.", correct:false }
+    ],
+    hinweise:[
+      "Woraus lernt eine KI? Was steckte im Beispiel in den Daten?",
+      "Das Stichwort heißt Bias, also Verzerrung aus den Daten."
+    ],
+    loesung:"Die KI lernt aus den Daten und übernimmt deren Verzerrung. Steckt im Verlauf ein altes Muster, schreibt sie es blind fort. Das nennt man Bias."
+  },
+  {
+    frage:"Was darfst du auf keinen Fall in eine KI eingeben?",
+    optionen:[
+      { text:"Name und Adresse einer Kundin.", correct:true },
+      { text:"Eine öffentliche Produktbeschreibung.", correct:false },
+      { text:"Einen Textentwurf ohne persönliche Angaben.", correct:false }
+    ],
+    hinweise:[
+      "Frage dich: Dürfte diese Angabe einfach so an die Öffentlichkeit?",
+      "Personenbezogene und vertrauliche Daten gehören nicht in eine KI."
+    ],
+    loesung:"Name und Adresse einer Kundin sind personenbezogene Daten. Sie gehören nicht in eine KI. Öffentliches oder Anonymes ist dagegen unkritisch."
+  },
+  {
+    frage:"Eine KI entscheidet über die Vergabe von Krediten mit. Welche Risikoklasse des EU AI Act ist das?",
+    optionen:[
+      { text:"Hohes Risiko.", correct:true },
+      { text:"Minimales Risiko.", correct:false },
+      { text:"Verboten.", correct:false }
+    ],
+    hinweise:[
+      "Leitregel: je schwerer die Folgen für Menschen, desto höher die Klasse.",
+      "Eine falsche Kreditentscheidung trifft Menschen hart. Aber verboten ist es nicht."
+    ],
+    loesung:"Kreditentscheidungen betreffen wichtige Lebenschancen, daher hohes Risiko: erlaubt, aber nur mit strengen Auflagen und menschlicher Aufsicht."
+  },
+  {
+    frage:"Ein Onlineshop nutzt ein KI-generiertes Werbebild. Was schreibt der EU AI Act vor?",
+    optionen:[
+      { text:"Das Bild muss als KI-generiert gekennzeichnet werden (Transparenzpflicht).", correct:true },
+      { text:"KI-Bilder sind komplett verboten.", correct:false },
+      { text:"Nichts, KI-Bilder darf man unbegrenzt und unmarkiert nutzen.", correct:false }
+    ],
+    hinweise:[
+      "In welche Klasse fällt ein KI-Werbebild? Was gilt dort zusätzlich?",
+      "Stichwort Transparenz: Menschen sollen KI-Inhalte erkennen können."
+    ],
+    loesung:"Ein KI-Werbebild hat begrenztes Risiko und unterliegt der Transparenzpflicht: Es muss als KI-generiert erkennbar sein."
+  }
+];
+
+// Abschluss-Check: ohne Hilfen, ein Versuch
+const ABSCHLUSS = [
+  {
+    frage:"Eine Firma möchte mit einer KI per Kamera laufend die Stimmung ihrer Angestellten am Arbeitsplatz erkennen. Wie ist das nach dem EU AI Act einzuordnen?",
+    optionen:[
+      { text:"Verboten, Emotionserkennung von Beschäftigten am Arbeitsplatz ist untersagt.", correct:true },
+      { text:"Minimales Risiko, das ist völlig harmlos.", correct:false },
+      { text:"Erlaubt, solange die Firma es intern nicht ankündigt.", correct:false }
+    ],
+    loesung:"Emotionserkennung von Beschäftigten am Arbeitsplatz zählt zu den verbotenen Anwendungen. Sie greift zu stark in die Rechte der Beschäftigten ein."
+  },
+  {
+    frage:"Du hast die KI eine Antwort an eine Kundin schreiben lassen. Was tust du, bevor du sie abschickst?",
+    optionen:[
+      { text:"Selbst durchlesen, Fakten prüfen und keine personenbezogenen Daten der Kundin eingegeben haben.", correct:true },
+      { text:"Sofort abschicken, die KI macht keine Fehler.", correct:false },
+      { text:"Zur Sicherheit Name und Vertragsnummer der Kundin in die KI geben.", correct:false }
+    ],
+    loesung:"Du bleibst verantwortlich: erst prüfen (Halluzinationen möglich), und keine personenbezogenen Daten der Kundin in die KI geben (Datenschutz)."
+  }
+];
+
+const SELF_STUFEN = [
+  { key:"sicher", label:"kann ich sicher", cls:"s-sicher" },
+  { key:"unsicher", label:"bin unsicher", cls:"s-unsicher" },
+  { key:"noch", label:"noch nicht", cls:"s-noch" }
+];
+
+/* ============================================================
+   ZUSTAND (ein Objekt pro Element, keine parallelen Arrays)
+   ============================================================ */
+const PHASES = ["p0","p1","p2","p3","p4","p5","p6"];
+const PHASE_LABELS = ["Start","Alltag","Erfundenes","Verzerrung","Datenschutz","EU AI Act","Sicherung"];
+let current = 0;
+
+const selfBefore = {};
+const selfAfter  = {};
+
+const alltagState = ALLTAG.map(() => ({ pick:null })); // pick: true=KI, false=keineKI
+
+const fehlerState = { versuche:0, geloest:false };
+
+const biasState = { gewaehlt:null, done:false };
+
+const dsState = DSITEMS.map(item => ({ id:item.id, placed:null, locked:false }));
+let dsSel = null;
+
+const risikoState = RISIKO_APPS.map(() => ({ done:false, versuche:0, gezeigt:false }));
+
+const satzbauState = {}; // id -> { filled:[], bank:[], done:false }
+
+const secureState = SICHERUNG.map(() => ({ versuche:0, geloest:false, gewaehlt:null, aufgedeckt:false }));
+const checkState  = ABSCHLUSS.map(() => ({ gewaehlt:null }));
+let checkDone = false;
+
+/* ============================================================
+   HILFSFUNKTIONEN
+   ============================================================ */
+function $(id){ return document.getElementById(id); }
+function escapeHtml(s){ return String(s).replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+// Position der richtigen Antwort gleichmaeßig ueber die Aufgaben streuen
+function verteileLoesungen(aufgaben){
+  const genutzt = {};
+  aufgaben.forEach(a => {
+    const n = a.optionen.length;
+    const korrekt = a.optionen.find(o => o.correct);
+    const distraktoren = a.optionen.filter(o => !o.correct);
+    shuffle(distraktoren);
+    const positionen = shuffle([...Array(n).keys()]);
+    let zielPos = positionen[0], min = Infinity;
+    positionen.forEach(p => { const c = genutzt[p]||0; if(c<min){ min=c; zielPos=p; } });
+    genutzt[zielPos] = (genutzt[zielPos]||0)+1;
+    const neu = []; let d = 0;
+    for(let p=0;p<n;p++) neu.push(p===zielPos ? korrekt : distraktoren[d++]);
+    a.optionen = neu;
+  });
+}
+verteileLoesungen(SICHERUNG);
+verteileLoesungen(ABSCHLUSS);
+shuffle(BIAS.optionen);
+VERTIEFUNG.forEach(v => shuffle(v.quiz.optionen));
+
+function heute(){
+  const d = new Date();
+  const p = x => String(x).padStart(2,"0");
+  return { de:`${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()}`,
+           iso:`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}` };
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function renderProgress(){
+  $("progress").innerHTML = PHASES.map((_,i)=>{
+    const cls = i<current ? "done" : (i===current ? "current" : "");
+    return `<div class="progress-step ${cls}"></div>`;
+  }).join("");
+  $("progress-label").textContent = `Schritt ${current+1} von ${PHASES.length}: ${PHASE_LABELS[current]}`;
+}
+function goTo(i){
+  current = Math.max(0, Math.min(PHASES.length-1, i));
+  PHASES.forEach((id,idx)=> $(id).classList.toggle("active", idx===current));
+  renderProgress();
+  window.scrollTo({ top:0, behavior:"smooth" });
+}
+
+/* ============================================================
+   LERNZIELE + SELBSTEINSCHAETZUNG
+   ============================================================ */
+function renderGoals(){
+  $("goal-list-intro").innerHTML = LERNZIELE.map(l=>`<li>${l.text}</li>`).join("");
+}
+function renderSelf(containerId, store, withTips){
+  const c = $(containerId);
+  c.innerHTML = LERNZIELE.map(l=>`
+    <div class="self">
+      <div class="self-q">${l.text}</div>
+      <div class="self-opts">
+        ${SELF_STUFEN.map(s=>`<button type="button" class="self-opt ${s.cls}" data-lz="${l.id}" data-stufe="${s.key}">${s.label}</button>`).join("")}
+      </div>
+      ${withTips?`<div class="self-tip" id="tip-${l.id}">Vielleicht eine Stufe weiter? Sieh dir den passenden Abschnitt noch einmal an.</div>`:""}
+    </div>`).join("");
+  c.querySelectorAll(".self-opt").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const lz = btn.dataset.lz, stufe = btn.dataset.stufe;
+      store[lz] = stufe;
+      c.querySelectorAll(`.self-opt[data-lz="${lz}"]`).forEach(b=>b.classList.remove("sel"));
+      btn.classList.add("sel");
+      if(withTips){
+        const tip = $("tip-"+lz);
+        if(tip) tip.classList.toggle("show", stufe!=="sicher");
+      }
+    });
+  });
+}
+
+/* ============================================================
+   PHASE 1: STECKT HIER KI DAHINTER?
+   ============================================================ */
+function renderAlltag(){
+  $("alltag-ui").innerHTML = ALLTAG.map((a,i)=>{
+    const st = alltagState[i];
+    const done = st.pick!==null;
+    let kiCls="tf-btn", neinCls="tf-btn";
+    if(done){
+      kiCls += " dim"; neinCls += " dim";
+      // markiere Auswahl und Richtigkeit
+      if(st.pick===true) kiCls = "tf-btn " + (a.istKI?"right":"wrong");
+      else neinCls = "tf-btn " + (!a.istKI?"right":"wrong");
+      // immer die korrekte Seite gruen zeigen
+      if(a.istKI) kiCls = kiCls.replace("dim","right");
+      else neinCls = neinCls.replace("dim","right");
+    }
+    return `
+      <div class="tf-item">
+        <div class="tf-q">${a.text}</div>
+        <div class="tf-btns">
+          <button type="button" class="${kiCls}" data-i="${i}" data-v="ki" ${done?"disabled":""}>Hier steckt KI</button>
+          <button type="button" class="${neinCls}" data-i="${i}" data-v="nein" ${done?"disabled":""}>Keine KI</button>
+        </div>
+        <div class="fb ${done?"show "+(st.pick===a.istKI?"ok":"info"):""}" id="al-fb-${i}">${done?escapeHtml(a.why):""}</div>
+      </div>`;
+  }).join("");
+  $("alltag-ui").querySelectorAll(".tf-btn").forEach(b=>{
+    b.addEventListener("click",()=>pickAlltag(parseInt(b.dataset.i,10), b.dataset.v==="ki"));
+  });
+  updateAlltagCount();
+}
+function pickAlltag(i, guessKI){
+  if(alltagState[i].pick!==null) return;
+  alltagState[i].pick = guessKI;
+  renderAlltag();
+}
+function updateAlltagCount(){
+  const done = alltagState.filter(s=>s.pick!==null).length;
+  const richtig = ALLTAG.filter((a,i)=> alltagState[i].pick===a.istKI).length;
+  $("alltag-count").textContent = `${done} von ${ALLTAG.length} entschieden`;
+  if(done===ALLTAG.length){
+    const fb = $("alltag-fb");
+    fb.className = "fb show ok";
+    fb.innerHTML = `Stark. Du hast ${richtig} von ${ALLTAG.length} richtig eingeschätzt. Merke: KI hat aus Daten gelernt. Taschenrechner, Summenformel und Wecker folgen dagegen festen Regeln, das ist keine KI.`;
+    $("p1-next").style.display = "inline-flex";
+  }
+}
+
+/* ============================================================
+   PHASE 2: HALLUZINATION, FEHLER IM TEXT FINDEN
+   ============================================================ */
+function renderFehler(){
+  let k = -1;
+  const html = FEHLER.segmente.map(seg=>{
+    if(typeof seg === "string") return escapeHtml(seg);
+    k++;
+    return `<button type="button" class="find-span" data-k="${k}" ${fehlerState.geloest?"disabled":""}>${escapeHtml(seg.text)}</button>`;
+  }).join("");
+  $("fehler-ui").innerHTML = html;
+  $("fehler-ui").querySelectorAll(".find-span").forEach(b=>{
+    b.addEventListener("click",()=>pickFehler(parseInt(b.dataset.k,10), b));
+  });
+}
+function kandidaten(){ return FEHLER.segmente.filter(s=>typeof s!=="string"); }
+function pickFehler(k, btn){
+  if(fehlerState.geloest) return;
+  const cand = kandidaten()[k];
+  const fb = $("fehler-fb");
+  if(cand.correct){
+    fehlerState.geloest = true;
+    btn.classList.add("correct");
+    $("fehler-ui").querySelectorAll(".find-span").forEach(b=> b.disabled=true);
+    fb.className = "fb show ok";
+    fb.textContent = cand.why;
+    showFehlerCase();
+    $("p2-next").style.display = "inline-flex";
+  } else {
+    fehlerState.versuche++;
+    btn.classList.add("wrong"); btn.disabled = true;
+    fb.className = "fb show tip";
+    fb.textContent = cand.why + " Suche weiter: Welche Angabe könntest du nirgends nachschlagen?";
+    if(fehlerState.versuche>=3 && !fehlerState.geloest){
+      // Aufloesung anbieten
+      const korrektK = kandidaten().findIndex(c=>c.correct);
+      const korrektBtn = $("fehler-ui").querySelectorAll(".find-span")[korrektK];
+      if(korrektBtn){ korrektBtn.classList.add("correct"); }
+      fehlerState.geloest = true;
+      $("fehler-ui").querySelectorAll(".find-span").forEach(b=> b.disabled=true);
+      fb.className = "fb show info";
+      fb.innerHTML = "Kein Problem. Erfunden ist die <strong>EU-Norm EN 14943-2</strong>. Eine solche Norm gibt es nicht, die KI hat sie plausibel erfunden.";
+      showFehlerCase();
+      $("p2-next").style.display = "inline-flex";
+    }
+  }
+}
+function showFehlerCase(){
+  const c = FEHLER.realfall;
+  $("fehler-case").style.display = "block";
+  $("fehler-case").innerHTML = `<div class="case"><span class="ic">⚖️</span><div><h4>${escapeHtml(c.titel)}</h4><p>${escapeHtml(c.text)}</p></div></div>`;
+}
+
+/* ============================================================
+   PHASE 3: BIAS, VORHERSAGE
+   ============================================================ */
+function renderBias(){
+  $("bias-ui").innerHTML = BIAS.optionen.map((o,oi)=>{
+    let cls = "opt-btn";
+    if(biasState.done){
+      if(o.correct) cls += " cor";
+      else if(biasState.gewaehlt===oi) cls += " wrg";
+    } else if(biasState.gewaehlt===oi) cls += " sel";
+    return `<button type="button" class="${cls}" data-o="${oi}" ${biasState.done?"disabled":""}>${o.text}</button>`;
+  }).join("");
+  if(!biasState.done){
+    $("bias-ui").querySelectorAll(".opt-btn").forEach(b=>{
+      b.addEventListener("click",()=>pickBias(parseInt(b.dataset.o,10)));
+    });
+  }
+}
+function pickBias(oi){
+  if(biasState.done) return;
+  biasState.gewaehlt = oi;
+  biasState.done = true;
+  renderBias();
+  const richtig = BIAS.optionen[oi].correct;
+  const fb = $("bias-fb");
+  fb.className = "fb show " + (richtig?"ok":"info");
+  fb.textContent = (richtig ? "Gute Vorhersage. " : "Knapp daneben. ") + BIAS.aufloesung;
+  const c = BIAS.realfall;
+  $("bias-case").innerHTML = `<div class="case"><span class="ic">⚖️</span><div><h4>${escapeHtml(c.titel)}</h4><p>${escapeHtml(c.text)}</p></div></div>`;
+  $("bias-after").style.display = "block";
+  renderSatzbau("sb-bias", "bias");
+  $("p3-next").style.display = "inline-flex";
+}
+
+/* ============================================================
+   PHASE 4: DATENSCHUTZ, ZUORDNEN (Tipp-zum-Zuordnen)
+   ============================================================ */
+function dsLocked(){ return dsState.some(s=>s.locked); }
+function dsChipHtml(id, cat){
+  const item = DSITEMS.find(f=>f.id===id);
+  const st = dsState.find(s=>s.id===id);
+  let extra = "";
+  if(st.locked) extra = (st.placed===item.cat) ? " cor" : " wrg";
+  else if(dsSel===id) extra = " sel";
+  return `<button type="button" class="chip${extra}" data-chip="${id}">${item.text}</button>`;
+}
+function renderDS(){
+  const bank = $("ds-bank");
+  const inBank = dsState.filter(s=>!s.placed);
+  bank.classList.toggle("armed", dsSel!==null);
+  bank.innerHTML = inBank.length
+    ? inBank.map(s=>dsChipHtml(s.id)).join("")
+    : `<span class="muted" style="font-size:13.5px">Alle Karten verteilt.</span>`;
+  ["darf","nicht"].forEach(cat=>{
+    $("bin-"+cat).innerHTML = dsState.filter(s=>s.placed===cat).map(s=>dsChipHtml(s.id,cat)).join("");
+  });
+  document.querySelectorAll("#p4 .bin").forEach(b=> b.classList.toggle("armed", dsSel!==null && !dsLocked()));
+  $("ds-check").disabled = dsState.some(s=>!s.placed) || dsLocked();
+  bindDSEvents();
+}
+function bindDSEvents(){
+  document.querySelectorAll("#p4 [data-chip]").forEach(ch=>{
+    ch.onclick = ()=>{
+      if(dsLocked()) return;
+      const id = ch.dataset.chip;
+      const st = dsState.find(s=>s.id===id);
+      if(st.placed){ st.placed=null; dsSel=null; renderDS(); return; }
+      dsSel = (dsSel===id) ? null : id;
+      renderDS();
+    };
+  });
+  document.querySelectorAll("#p4 .bin").forEach(bin=>{
+    bin.onclick = ()=>{
+      if(dsLocked() || dsSel===null) return;
+      dsState.find(s=>s.id===dsSel).placed = bin.dataset.cat;
+      dsSel = null;
+      renderDS();
+    };
+  });
+}
+function checkDS(){
+  let wrong = 0;
+  dsState.forEach(s=>{
+    s.locked = true;
+    const item = DSITEMS.find(f=>f.id===s.id);
+    if(s.placed!==item.cat) wrong++;
+  });
+  renderDS();
+  const fb = $("ds-fb");
+  if(wrong===0){
+    fb.className = "fb show ok";
+    fb.textContent = "Alles richtig. Faustregel: Was nicht an die Öffentlichkeit darf, gehört nicht in eine KI.";
+    $("ds-check").style.display = "none";
+    finishDS();
+  } else {
+    fb.className = "fb show info";
+    fb.innerHTML = `${wrong} Karte(n) liegen noch falsch (rot). Frage dich bei jeder: Dürfte diese Angabe einfach so an die Öffentlichkeit? Wenn nein, gehört sie nicht hinein.`;
+    setTimeout(()=>{
+      dsState.forEach(s=>{
+        const item = DSITEMS.find(f=>f.id===s.id);
+        s.locked = false;
+        if(s.placed!==item.cat) s.placed = null;
+      });
+      fb.className = "fb"; renderDS();
+    }, 2400);
+  }
+}
+function finishDS(){
+  const c = DS_CASE;
+  $("ds-case").style.display = "block";
+  $("ds-case").innerHTML = `<div class="case"><span class="ic">⚖️</span><div><h4>${escapeHtml(c.titel)}</h4><p>${escapeHtml(c.text)}</p></div></div>`;
+  $("vertiefung-block").style.display = "block";
+  $("p4-next").style.display = "inline-flex";
+}
+
+/* ============================================================
+   PHASE 4: VERTIEFUNG (Akkordeon mit Mini-Quiz)
+   ============================================================ */
+function renderVertiefung(){
+  $("vertiefung-ui").innerHTML = VERTIEFUNG.map((v,vi)=>`
+    <h4>${v.icon} ${v.titel}</h4>
+    <p>${v.text}</p>
+    <div class="mini-q">${v.quiz.frage}</div>
+    <div class="opt-list" id="mini-${vi}">
+      ${v.quiz.optionen.map((o,oi)=>`<button type="button" class="opt-btn" data-v="${vi}" data-o="${oi}">${o.text}</button>`).join("")}
+    </div>
+    <div class="fb" id="mini-fb-${vi}"></div>
+    ${vi<VERTIEFUNG.length-1?'<hr style="border:none;border-top:1px solid var(--line);margin:16px 0">':''}
+  `).join("");
+  $("vertiefung-ui").querySelectorAll(".opt-btn").forEach(b=>{
+    b.addEventListener("click",()=>miniAnswer(parseInt(b.dataset.v,10), parseInt(b.dataset.o,10)));
+  });
+}
+function miniAnswer(vi, oi){
+  const q = VERTIEFUNG[vi].quiz;
+  const box = $("mini-"+vi);
+  if(box.dataset.done) return;
+  box.dataset.done = "1";
+  box.querySelectorAll(".opt-btn").forEach((b,bi)=>{
+    b.disabled = true;
+    if(q.optionen[bi].correct) b.classList.add("cor");
+    else if(bi===oi) b.classList.add("wrg");
+  });
+  const fb = $("mini-fb-"+vi);
+  fb.className = "fb show " + (q.optionen[oi].correct?"ok":"info");
+  fb.textContent = (q.optionen[oi].correct?"Richtig. ":"Nicht ganz. ") + q.loesung;
+}
+
+/* ============================================================
+   PHASE 5: EU AI ACT, EINORDNEN-ZUM-LERNEN
+   ============================================================ */
+function renderPyramid(){
+  $("pyramid").innerHTML = RISIKO_KLASSEN.map(kl=>{
+    const chips = RISIKO_APPS.map((a,ai)=>({a,st:risikoState[ai]}))
+      .filter(x=> x.st.done && x.a.cat===kl.key)
+      .map(x=> `<span class="pyr-chip ${x.st.gezeigt?"shown":""}">${escapeHtml(x.a.text)}</span>`).join("");
+    return `<div class="pyr-level ${kl.cls}" style="width:${kl.w}%">
+        <div class="pyr-label">${kl.label}</div>
+        <div class="pyr-regel">${kl.regel}</div>
+        ${chips?`<div class="pyr-chips">${chips}</div>`:""}
+      </div>`;
+  }).join("");
+}
+function naechsteRisikoApp(){ return risikoState.findIndex(s=>!s.done); }
+function renderRisiko(){
+  renderPyramid();
+  const idx = naechsteRisikoApp();
+  const now = $("risk-now");
+  if(idx===-1){
+    now.style.display = "none";
+    finishRisiko();
+    return;
+  }
+  const a = RISIKO_APPS[idx];
+  const done = risikoState.filter(s=>s.done).length;
+  now.style.display = "block";
+  now.innerHTML = `
+    <div class="risk-q">Anwendung ${done+1} von ${RISIKO_APPS.length}: In welche Klasse gehört das?</div>
+    <div class="risk-app">${escapeHtml(a.text)}</div>
+    <div class="opt-list">
+      ${RISIKO_KLASSEN.map(kl=>`<button type="button" class="opt-btn" data-cat="${kl.key}">${kl.label}</button>`).join("")}
+    </div>`;
+  now.querySelectorAll(".opt-btn").forEach(b=>{
+    b.addEventListener("click",()=>pickRisiko(idx, b.dataset.cat));
+  });
+}
+function pickRisiko(idx, catKey){
+  const st = risikoState[idx];
+  const a = RISIKO_APPS[idx];
+  if(st.done) return;
+  const fb = $("risk-fb");
+  if(catKey===a.cat){
+    st.done = true;
+    fb.className = "fb show ok";
+    fb.textContent = "Richtig. " + a.why;
+    renderRisiko();
+  } else {
+    st.versuche++;
+    if(st.versuche>=2){
+      st.done = true; st.gezeigt = true;
+      const klWrong = RISIKO_KLASSEN.find(k=>k.key===catKey).label;
+      const klRight = RISIKO_KLASSEN.find(k=>k.key===a.cat).label;
+      fb.className = "fb show info";
+      fb.innerHTML = `Nicht ganz (nicht „${escapeHtml(klWrong)}“). Richtig ist <strong>${escapeHtml(klRight)}</strong>. ${escapeHtml(a.why)}`;
+      renderRisiko();
+    } else {
+      const gewaehlt = RISIKO_KLASSEN.find(k=>k.key===catKey);
+      const richtig = RISIKO_KLASSEN.find(k=>k.key===a.cat);
+      const hoeher = RISIKO_KLASSEN.indexOf(richtig) < RISIKO_KLASSEN.indexOf(gewaehlt);
+      fb.className = "fb show tip";
+      fb.textContent = `Noch nicht. Denk an die Folgen für Menschen: Sind sie schwerer, gehört die Anwendung ${hoeher?"in eine strengere":"in eine lockerere"} Klasse. Versuch es noch einmal.`;
+    }
+  }
+}
+function finishRisiko(){
+  if($("risk-done").style.display==="block") return;
+  $("risk-done").style.display = "block";
+  $("risk-regel").innerHTML = "<strong>Die Regel, die du gerade entdeckt hast:</strong> Je schwerer die möglichen Folgen für Menschen, desto höher die Risikoklasse und desto strenger die Auflagen. Von minimal (Spamfilter) bis verboten (Social Scoring).";
+  renderSatzbau("sb-airisk", "airisk");
+  $("p5-next").style.display = "inline-flex";
+}
+
+/* ============================================================
+   SATZBAUSTEINE (Merksatz selbst bauen), wiederverwendbar
+   ============================================================ */
+function renderSatzbau(containerId, key){
+  const data = SATZBAU[key];
+  if(!satzbauState[containerId]){
+    satzbauState[containerId] = {
+      filled: data.luecken.map(()=>null),
+      bank: shuffle([...data.bausteine]),
+      done: false
+    };
+  }
+  const st = satzbauState[containerId];
+  let g = -1;
+  const sentence = data.segmente.map(seg=>{
+    if(typeof seg === "string") return escapeHtml(seg);
+    g++;
+    const gi = seg.g;
+    const val = st.filled[gi];
+    let cls = "sb-gap" + (val!==null?" filled":"");
+    if(st.done){ cls += (val===data.luecken[gi].loesung) ? " ok" : " no"; }
+    return `<button type="button" class="${cls}" data-gap="${gi}" ${st.done?"disabled":""}>${val!==null?escapeHtml(val):"&nbsp;&nbsp;&nbsp;&nbsp;"}</button>`;
+  }).join("");
+  const used = st.filled.filter(v=>v!==null);
+  const tiles = st.bank.map(w=>{
+    const isUsed = used.includes(w);
+    return `<button type="button" class="sb-tile ${isUsed?"used":""}" data-word="${escapeHtml(w)}" ${st.done||isUsed?"disabled":""}>${escapeHtml(w)}</button>`;
+  }).join("");
+  $(containerId).innerHTML = `
+    <div class="sb-card">
+      <div class="sb-sentence">${sentence}</div>
+      <div class="sb-bank">${tiles}</div>
+      <div class="fb" id="${containerId}-fb"></div>
+    </div>`;
+  if(st.done) return;
+  $(containerId).querySelectorAll(".sb-gap").forEach(b=>{
+    b.addEventListener("click",()=>{ const gi=parseInt(b.dataset.gap,10); if(st.filled[gi]!==null){ st.filled[gi]=null; renderSatzbau(containerId,key);} });
+  });
+  $(containerId).querySelectorAll(".sb-tile").forEach(b=>{
+    b.addEventListener("click",()=>{
+      const w = b.dataset.word;
+      const next = st.filled.findIndex(v=>v===null);
+      if(next===-1) return;
+      st.filled[next] = w;
+      const allFilled = st.filled.every(v=>v!==null);
+      renderSatzbau(containerId,key);
+      if(allFilled) checkSatzbau(containerId,key);
+    });
+  });
+}
+function checkSatzbau(containerId, key){
+  const data = SATZBAU[key];
+  const st = satzbauState[containerId];
+  const allOk = st.filled.every((v,i)=> v===data.luecken[i].loesung);
+  const fb = $(containerId+"-fb");
+  if(allOk){
+    st.done = true;
+    renderSatzbau(containerId,key);
+    const f = $(containerId+"-fb");
+    f.className = "fb show ok";
+    f.textContent = "Genau so. Gut formuliert.";
+  } else {
+    fb.className = "fb show tip";
+    fb.textContent = "Noch nicht ganz. Tippe eine Lücke an, um sie wieder zu leeren, und probiere eine andere Reihenfolge.";
+  }
+}
+
+/* ============================================================
+   SICHERUNG: MC mit gestuften 3-Versuche-Hilfen
+   ============================================================ */
+function renderSecure(){
+  $("secure-ui").innerHTML = SICHERUNG.map((q,qi)=>{
+    const st = secureState[qi];
+    const opts = q.optionen.map((o,oi)=>{
+      let cls="opt-btn";
+      if(st.aufgedeckt){
+        if(o.correct) cls+=" cor";
+        else if(st.gewaehlt===oi) cls+=" wrg";
+      } else if(st.gewaehlt===oi) cls+=" sel";
+      const dis = st.geloest || st.aufgedeckt ? "disabled" : "";
+      return `<button type="button" class="${cls}" data-q="${qi}" data-o="${oi}" ${dis}>${o.text}</button>`;
+    }).join("");
+    const dots = [0,1,2].map(d=>`<span class="try-dot ${d<st.versuche?"used":""}"></span>`).join("");
+    return `
+      <div class="q-block">
+        <div class="q-num">Aufgabe ${qi+1} von ${SICHERUNG.length}</div>
+        <div class="q-text">${q.frage}</div>
+        <div class="opt-list">${opts}</div>
+        <div class="tries">${dots}<span>${st.geloest?"gelöst ✓":(st.aufgedeckt?"Lösung gezeigt":"Versuche: "+st.versuche+" / 3")}</span></div>
+        <div class="fb" id="sec-fb-${qi}"></div>
+      </div>`;
+  }).join("");
+  $("secure-ui").querySelectorAll(".opt-btn").forEach(b=>{
+    b.addEventListener("click",()=>secureAnswer(parseInt(b.dataset.q,10), parseInt(b.dataset.o,10)));
+  });
+  updateSecureProgress();
+}
+function secureAnswer(qi, oi){
+  const st = secureState[qi];
+  if(st.geloest || st.aufgedeckt) return;
+  st.gewaehlt = oi;
+  const q = SICHERUNG[qi];
+  if(q.optionen[oi].correct){
+    st.geloest = true;
+    renderSecure();
+    const f = $("sec-fb-"+qi);
+    f.className="fb show ok";
+    f.textContent = "Richtig. " + q.loesung;
+    afterSecureChange();
+  } else {
+    st.versuche++;
+    if(st.versuche>=3){
+      st.aufgedeckt = true;
+      renderSecure();
+      const f = $("sec-fb-"+qi);
+      f.className="fb show info";
+      f.innerHTML = "Kein Problem. Hier die Lösung (grün): <strong>"+escapeHtml(q.loesung)+"</strong>";
+      afterSecureChange();
+    } else {
+      renderSecure();
+      const f = $("sec-fb-"+qi);
+      f.className="fb show tip";
+      f.textContent = "Noch nicht. " + (q.hinweise[st.versuche-1] || "Versuch es noch einmal.");
+    }
+  }
+}
+function secureFertig(){ return secureState.every(s=>s.geloest||s.aufgedeckt); }
+function updateSecureProgress(){
+  const done = secureState.filter(s=>s.geloest||s.aufgedeckt).length;
+  $("sec-fill").style.width = (done/SICHERUNG.length*100)+"%";
+  $("sec-txt").textContent = `${done} von ${SICHERUNG.length} bearbeitet`;
+}
+function afterSecureChange(){
+  updateSecureProgress();
+  if(secureFertig()){
+    $("self-after-card").style.display="block";
+    $("reflect-card").style.display="block";
+    $("check-card").style.display="block";
+  }
+}
+
+/* ============================================================
+   ABSCHLUSS-CHECK (ein Versuch, keine Hilfen)
+   ============================================================ */
+function renderCheck(){
+  $("check-ui").innerHTML = ABSCHLUSS.map((q,qi)=>{
+    const st = checkState[qi];
+    const opts = q.optionen.map((o,oi)=>{
+      let cls="opt-btn";
+      if(checkDone){
+        if(o.correct) cls+=" cor";
+        else if(st.gewaehlt===oi) cls+=" wrg";
+      } else if(st.gewaehlt===oi) cls+=" sel";
+      return `<button type="button" class="${cls}" data-q="${qi}" data-o="${oi}" ${checkDone?"disabled":""}>${o.text}</button>`;
+    }).join("");
+    return `<div class="q-block">
+      <div class="q-num">Check-Frage ${qi+1} von ${ABSCHLUSS.length}</div>
+      <div class="q-text">${q.frage}</div>
+      <div class="opt-list">${opts}</div>
+      <div class="fb" id="chk-fb-${qi}"></div>
+    </div>`;
+  }).join("");
+  if(!checkDone){
+    $("check-ui").querySelectorAll(".opt-btn").forEach(b=>{
+      b.addEventListener("click",()=>{
+        const qi=parseInt(b.dataset.q,10), oi=parseInt(b.dataset.o,10);
+        checkState[qi].gewaehlt=oi; renderCheck();
+        $("check-submit").disabled = checkState.some(s=>s.gewaehlt===null);
+      });
+    });
+  }
+}
+function submitCheck(){
+  checkDone = true;
+  renderCheck();
+  ABSCHLUSS.forEach((q,qi)=>{
+    const st=checkState[qi];
+    const ok=q.optionen[st.gewaehlt] && q.optionen[st.gewaehlt].correct;
+    const f=$("chk-fb-"+qi);
+    f.className="fb show "+(ok?"ok":"info");
+    f.innerHTML = (ok?"Richtig. ":"Nicht ganz. ") + escapeHtml(q.loesung);
+  });
+  $("check-submit").style.display="none";
+  buildResult();
+  $("result-card").style.display="block";
+  $("result-card").scrollIntoView({ behavior:"smooth" });
+}
+
+/* ============================================================
+   ERGEBNISUEBERSICHT + EXPORT
+   ============================================================ */
+function stufeLabel(key){ const s=SELF_STUFEN.find(x=>x.key===key); return s?s.label:"—"; }
+function ergebnisDaten(){
+  const sicherErst = secureState.filter(s=>s.geloest && s.versuche===0).length;
+  const checkOk = ABSCHLUSS.filter((q,qi)=> q.optionen[checkState[qi].gewaehlt] && q.optionen[checkState[qi].gewaehlt].correct).length;
+  return { sicherErst, checkOk };
+}
+function buildResult(){
+  const d = heute();
+  const { sicherErst, checkOk } = ergebnisDaten();
+
+  const sicherRows = SICHERUNG.map((q,qi)=>{
+    const st = secureState[qi];
+    const korrekt = q.optionen.find(o=>o.correct).text;
+    const meine = st.geloest ? korrekt : "(nicht selbst gelöst)";
+    const status = st.geloest ? `<span class="status-ok">✓</span>` : `<span class="status-no">✗</span>`;
+    return `<tr><td>${q.frage}</td><td>${meine}</td><td>${korrekt}</td><td>${st.versuche}</td><td>${status}</td></tr>`;
+  }).join("");
+
+  const selfRows = LERNZIELE.map(l=>
+    `<tr><td>${l.text}</td><td>${stufeLabel(selfBefore[l.id])}</td><td>${stufeLabel(selfAfter[l.id])}</td></tr>`
+  ).join("");
+
+  const r1=($("reflect1").value||"").trim(), r2=($("reflect2").value||"").trim();
+  const reflexionHtml = (r1||r2) ? `
+    <h3>Meine Reflexion</h3>
+    ${r1?`<p><em>Risiko, auf das ich achte:</em><br>${escapeHtml(r1)}</p>`:""}
+    ${r2?`<p><em>Wo ich noch unsicher bin:</em><br>${escapeHtml(r2)}</p>`:""}` : "";
+
+  $("result-body").innerHTML = `
+    <div class="result-head"><h3 style="margin:0">${META.thema}</h3></div>
+    <p class="muted">Bearbeitet am ${d.de}</p>
+
+    <h3>Lernziele</h3>
+    <ul>${LERNZIELE.map(l=>`<li>${l.text}</li>`).join("")}</ul>
+
+    <h3>Das Wichtigste in Kürze</h3>
+    <ul>${META.merksaetze.map(m=>`<li>${m}</li>`).join("")}</ul>
+
+    <h3>Meine Ergebnisse (Sicherung)</h3>
+    <table class="res"><thead><tr><th>Aufgabe</th><th>Meine Antwort</th><th>Korrekte Lösung</th><th>Versuche</th><th>Status</th></tr></thead>
+    <tbody>${sicherRows}</tbody></table>
+    <p class="score-big">${sicherErst} von ${SICHERUNG.length} Aufgaben im ersten Versuch gelöst.</p>
+    <p>Abschluss-Check: ${checkOk} von ${ABSCHLUSS.length} richtig.</p>
+
+    <h3>Meine Einschätzung (vorher / nachher)</h3>
+    <table class="res"><thead><tr><th>Lernziel</th><th>Vorher</th><th>Nachher</th></tr></thead>
+    <tbody>${selfRows}</tbody></table>
+    <p class="muted" style="font-size:13px">Die Selbsteinschätzung ist weder richtig noch falsch. Sie zeigt nur deine eigene Sicht.</p>
+
+    ${reflexionHtml}
+  `;
+  buildPrintArea(d, sicherErst, checkOk);
+}
+function buildPrintArea(d, sicherErst, checkOk){
+  const sicherRows = SICHERUNG.map((q,qi)=>{
+    const st=secureState[qi];
+    const korrekt=q.optionen.find(o=>o.correct).text;
+    const meine=st.geloest?korrekt:"(nicht selbst gelöst)";
+    return `<tr><td>${q.frage}</td><td>${meine}</td><td>${korrekt}</td><td>${st.versuche}</td><td>${st.geloest?"✓":"✗"}</td></tr>`;
+  }).join("");
+  const selfRows = LERNZIELE.map(l=>`<tr><td>${l.text}</td><td>${stufeLabel(selfBefore[l.id])}</td><td>${stufeLabel(selfAfter[l.id])}</td></tr>`).join("");
+  $("print-area").innerHTML = `
+    <h2>${META.thema}</h2>
+    <p><strong>Datum:</strong> ${d.de}</p>
+    <div class="print-lines">Name: <span></span> Klasse: <span></span></div>
+    <h3>Lernziele</h3>
+    <ul>${LERNZIELE.map(l=>`<li>${l.text}</li>`).join("")}</ul>
+    <h3>Das Wichtigste in Kürze</h3>
+    <ul>${META.merksaetze.map(m=>`<li>${m}</li>`).join("")}</ul>
+    <h3>Meine Ergebnisse</h3>
+    <table class="res"><thead><tr><th>Aufgabe</th><th>Meine Antwort</th><th>Lösung</th><th>Vers.</th><th>Status</th></tr></thead><tbody>${sicherRows}</tbody></table>
+    <p><strong>Gesamtergebnis:</strong> ${sicherErst} von ${SICHERUNG.length} im ersten Versuch · Abschluss-Check ${checkOk}/${ABSCHLUSS.length}.</p>
+    <h3>Meine Einschätzung (vorher / nachher)</h3>
+    <table class="res"><thead><tr><th>Lernziel</th><th>Vorher</th><th>Nachher</th></tr></thead><tbody>${selfRows}</tbody></table>
+  `;
+}
+function buildMarkdown(){
+  const d = heute();
+  const { sicherErst, checkOk } = ergebnisDaten();
+  let md = `# ${META.thema}\n**Datum:** ${d.de}\n\nName: ______________________  Klasse: ______________\n\n`;
+  md += `## Lernziele\n` + LERNZIELE.map(l=>`- ${l.text}`).join("\n") + `\n\n`;
+  md += `## Zusammenfassung der wichtigsten Inhalte\n` + META.merksaetze.map(m=>`- ${m}`).join("\n") + `\n\n`;
+  md += `## Meine Ergebnisse\n| Aufgabe | Meine Antwort | Korrekte Lösung | Versuche | Status |\n|---|---|---|---|---|\n`;
+  SICHERUNG.forEach((q,qi)=>{
+    const st=secureState[qi];
+    const korrekt=q.optionen.find(o=>o.correct).text;
+    const meine=st.geloest?korrekt:"(nicht selbst gelöst)";
+    md += `| ${q.frage.replace(/\|/g,"/")} | ${meine.replace(/\|/g,"/")} | ${korrekt.replace(/\|/g,"/")} | ${st.versuche} | ${st.geloest?"✓":"✗"} |\n`;
+  });
+  md += `\n**Gesamtergebnis:** ${sicherErst} von ${SICHERUNG.length} Aufgaben im ersten Versuch gelöst. Abschluss-Check: ${checkOk} von ${ABSCHLUSS.length} richtig.\n\n`;
+  md += `## Meine Einschätzung\n| Lernziel | Vorher | Nachher |\n|---|---|---|\n`;
+  LERNZIELE.forEach(l=> md += `| ${l.text.replace(/\|/g,"/")} | ${stufeLabel(selfBefore[l.id])} | ${stufeLabel(selfAfter[l.id])} |\n`);
+  const r1=($("reflect1").value||"").trim(), r2=($("reflect2").value||"").trim();
+  if(r1||r2){
+    md += `\n## Meine Reflexion\n`;
+    if(r1) md += `**Risiko, auf das ich achte:** ${r1}\n\n`;
+    if(r2) md += `**Wo ich noch unsicher bin:** ${r2}\n`;
+  }
+  md += `\n## Weiterarbeit\nDiese Zusammenfassung kann als Grundlage für die Weiterarbeit mit einer generativen KI (z. B. Claude) verwendet werden, etwa zum Erstellen von:\n- Lernquiz\n- Interaktiven Lernkarten (Flashcards)\n- Podcasts oder Erklärvideos\n- Infografiken\n- Individuellen Übungsaufgaben\n`;
+  return { md, name:`Grenzen-Risiken-Recht_Zusammenfassung_${d.iso}.md` };
+}
+function downloadMarkdown(){
+  const { md, name } = buildMarkdown();
+  const blob = new Blob([md], { type:"text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init(){
+  renderGoals();
+  renderSelf("self-before", selfBefore, false);
+  renderSelf("self-after", selfAfter, true);
+  renderAlltag();
+  renderFehler();
+  renderBias();
+  renderDS();
+  renderVertiefung();
+  renderRisiko();
+  renderSatzbau("sb-warmup", "warmup");
+  renderSecure();
+  renderCheck();
+  renderProgress();
+
+  // Navigation
+  $("p0-next").addEventListener("click",()=>goTo(1));
+  $("p1-next").addEventListener("click",()=>goTo(2));
+  $("p2-next").addEventListener("click",()=>goTo(3));
+  $("p3-next").addEventListener("click",()=>goTo(4));
+  $("p4-next").addEventListener("click",()=>goTo(5));
+  $("p5-next").addEventListener("click",()=>goTo(6));
+  document.querySelectorAll("[data-back]").forEach(b=> b.addEventListener("click",()=>goTo(current-1)));
+
+  // Uebungen
+  $("ds-check").addEventListener("click",checkDS);
+  $("check-submit").addEventListener("click",submitCheck);
+
+  // Export
+  $("btn-print").addEventListener("click",()=>window.print());
+  $("btn-md").addEventListener("click",downloadMarkdown);
+  $("btn-restart").addEventListener("click",()=>{ if(confirm("Modul von vorn beginnen? Deine Eingaben gehen verloren.")) location.reload(); });
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>

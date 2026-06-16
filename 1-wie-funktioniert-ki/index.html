@@ -146,6 +146,10 @@ li{margin:4px 0}
 .note .ic{font-size:20px;flex-shrink:0}
 .merk{background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:8px;padding:13px 15px;margin:14px 0;font-size:16px}
 .callout{background:#f4f7fc;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;margin:12px 0}
+.case{display:flex;gap:11px;background:var(--err-soft);border:1px solid #f0c4ba;border-radius:var(--radius-sm);padding:13px 15px;margin:14px 0}
+.case .ic{font-size:20px;flex-shrink:0}
+.case h4{color:var(--err);font-size:15px;margin:0 0 4px}
+.case p{margin:3px 0;font-size:14.5px;color:var(--text)}
 
 /* Zwei-Spalten-Vergleich */
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
@@ -194,6 +198,7 @@ details.acc>summary::-webkit-details-marker{display:none}
 details.acc>summary::after{content:"▾";margin-left:auto;color:var(--brand);transition:transform .2s}
 details.acc[open]>summary::after{transform:rotate(180deg)}
 .acc-body{padding:0 15px 14px}
+.mini-q{font-weight:600;color:var(--ink);margin:14px 0 6px;font-size:15px}
 
 /* Token-Demo (Zerlegung) */
 .tok-demo{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}
@@ -204,6 +209,31 @@ details.acc[open]>summary::after{transform:rotate(180deg)}
 .agent-flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0;font-size:14px}
 .agent-node{background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:8px 11px;color:var(--text)}
 .agent-arrow{color:var(--brand);font-weight:800}
+
+/* ============================================================
+   FEHLER IM TEXT FINDEN (Halluzination)
+   ============================================================ */
+.find-text{font-size:16.5px;line-height:2;background:#fafbfd;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;margin:6px 0}
+.find-span{font:inherit;font-size:inherit;border:none;background:var(--brand-soft);color:var(--brand-ink);border-bottom:2px dotted var(--brand);border-radius:4px;padding:1px 5px;cursor:pointer;transition:.12s}
+.find-span:hover{background:#d4e2fb}
+.find-span.correct{background:var(--ok-soft);color:var(--ok);border-bottom:2px solid var(--ok)}
+.find-span.wrong{background:var(--err-soft);color:var(--err);border-bottom:2px solid var(--err)}
+.find-span:disabled{cursor:default}
+
+/* ============================================================
+   SATZBAUSTEINE (Merksatz selbst bauen)
+   ============================================================ */
+.count-line{font-size:13.5px;color:var(--muted);font-weight:600;margin:0 0 10px}
+.sb-card{background:#fafbfd;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;margin:12px 0}
+.sb-sentence{font-size:16.5px;line-height:2.1;color:var(--ink)}
+.sb-gap{display:inline-block;min-width:96px;border-bottom:2px dashed var(--brand);text-align:center;color:var(--brand);font-weight:700;cursor:pointer;padding:1px 8px;border-radius:5px}
+.sb-gap.filled{border-bottom-style:solid;background:var(--brand-soft)}
+.sb-gap.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
+.sb-gap.no{color:var(--err);border-color:var(--err);background:var(--err-soft)}
+.sb-bank{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.sb-tile{min-height:var(--tap);border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:8px 14px;font:inherit;font-size:14.5px;cursor:pointer;transition:.15s;color:var(--text)}
+.sb-tile:hover{border-color:var(--brand)}
+.sb-tile.used{opacity:.32;pointer-events:none}
 
 /* ============================================================
    SICHERUNG
@@ -354,15 +384,21 @@ footer.app-foot a{color:var(--brand);cursor:pointer}
 
     <h3>Und was ist ein „Token"?</h3>
     <p>Du hast eben Wörter gewählt. Genau genommen arbeitet eine KI nicht mit ganzen Wörtern, sondern mit kleineren Bausteinen, den <strong>Token</strong>. Ein Token ist mal ein ganzes Wort, mal nur ein Wortteil, mal ein Satzzeichen.</p>
-    <p class="muted" style="font-size:14.5px">So könnte die KI diesen Satz in Token zerlegen (jeder Kasten ein Token):</p>
+    <p class="muted" style="font-size:14.5px">Dieselbe Aussage in zwei Sprachen. Schalte um und sieh, wie die KI den Satz in Token zerlegt (jeder Kasten ein Token):</p>
+    <div class="tf-btns" style="max-width:300px;margin:6px 0 10px">
+      <button type="button" class="tf-btn" id="tok-de">Deutsch</button>
+      <button type="button" class="tf-btn" id="tok-en">English</button>
+    </div>
     <div class="tok-demo" id="tok-demo" aria-label="Beispielhafte Zerlegung eines Satzes in Token"></div>
-    <p>Die KI sagt also strenggenommen das wahrscheinlichste nächste <strong>Token</strong> voraus und setzt daraus Wörter und Sätze zusammen. Lange, zusammengesetzte deutsche Wörter wie „Lieferverzögerung" zerfallen dabei oft in mehrere Token.</p>
+    <p class="count-line" id="tok-count"></p>
+    <p>Die KI sagt also strenggenommen das wahrscheinlichste nächste <strong>Token</strong> voraus und setzt daraus Wörter und Sätze zusammen. Lange, zusammengesetzte deutsche Wörter wie „Lieferverzögerung" zerfallen dabei oft in mehrere Token, darum „kostet" derselbe Text auf Deutsch mehr Token als auf Englisch.</p>
 
     <details class="acc">
       <summary><span>🔤</span> Mehr zu Token: Kontextfenster und Sprache</summary>
       <div class="acc-body">
         <p>Eine KI kann nur eine begrenzte Menge Token auf einmal „im Blick" behalten. Das nennt man <strong>Kontextfenster</strong>. Wird ein Gespräch sehr lang, fällt der Anfang aus dem Fenster, und die KI „vergisst" ihn.</p>
         <p>Wie viele Wörter in eine bestimmte Zahl Token passen, hängt von der Sprache ab. Im Englischen entsprechen 100 Token grob 75 Wörtern. <strong>Im Deutschen sind es deutlich weniger</strong>, eher 55 bis 65 Wörter, weil deutsche Wörter länger sind und oft zusammengesetzt werden. Dieselbe Nachricht „kostet" eine KI auf Deutsch also rund die Hälfte mehr Token als auf Englisch.</p>
+        <div id="akk-token"></div>
       </div>
     </details>
 
@@ -393,6 +429,18 @@ footer.app-foot a{color:var(--brand);cursor:pointer}
       </div>
     </div>
     <p>Beide lernen aus Daten. Der Unterschied liegt im Ergebnis: Die erkennende KI gibt eine <strong>Einordnung</strong> zurück, die erzeugende KI einen <strong>neuen Inhalt</strong>. In diesem Kurs geht es vor allem um die erzeugende KI, weil du mit ihr chattest.</p>
+
+    <div class="callout">
+      <strong>Schnelle Vorhersage:</strong> Du fragst eine App: „Ist auf diesem Foto ein Hund oder eine Katze?" Welche KI-Familie arbeitet hier?
+    </div>
+    <div class="opt-list" id="vorhersage-ui"></div>
+    <div class="fb" id="vorhersage-fb"></div>
+    <div id="vorhersage-after" style="display:none">
+      <h3>Sag es in eigenen Worten</h3>
+      <p class="muted" style="font-size:14px">Tippe die passenden Bausteine in die Lücken.</p>
+      <div id="sb-familie"></div>
+    </div>
+
     <div class="btn-row">
       <button class="btn btn-ghost" data-back>← Zurück</button>
       <div class="spacer"></div>
@@ -450,6 +498,13 @@ footer.app-foot a{color:var(--brand);cursor:pointer}
     <div class="callout">
       <strong>① Sie kann überzeugend irren.</strong> Weil sie nur fortschreibt, was plausibel klingt, kann eine KI Quellen, Zahlen oder Regeln erfinden, die es gar nicht gibt. Das nennt man Halluzination. Darum gehören KI-Ergebnisse immer gegengeprüft. → Thema „Grenzen und Risiken".
     </div>
+
+    <h3>🔎 Selbst testen: Finde die Halluzination</h3>
+    <p>Eine KI hat auf die Frage „Wer prägte den Begriff ‚künstliche Intelligenz'?" geantwortet. <strong>Eine Angabe darin ist frei erfunden.</strong> Welche? Tippe sie an.</p>
+    <div class="find-text" id="fehler-ui"></div>
+    <div class="fb" id="fehler-fb"></div>
+    <div id="fehler-case" style="display:none"></div>
+
     <div class="callout">
       <strong>② Dein Prompt steuert die Wahrscheinlichkeit.</strong> Je genauer deine Anweisung, desto klarer wird, welche Fortsetzung die KI als wahrscheinlich berechnet. Deshalb liefern präzise Prompts bessere Ergebnisse. → Thema „KI richtig nutzen".
     </div>
@@ -466,6 +521,7 @@ footer.app-foot a{color:var(--brand);cursor:pointer}
           <span class="agent-node">Ergebnis prüfen</span><span class="agent-arrow">↺</span>
         </div>
         <p>Mehr Selbstständigkeit bedeutet aber auch <strong>mehr Verantwortung beim Menschen</strong>: Da der Agent eigenständig handelt, musst du seine Schritte und Ergebnisse umso genauer kontrollieren. → Thema „Future of Work".</p>
+        <div id="akk-agent"></div>
       </div>
     </details>
 
@@ -480,6 +536,7 @@ footer.app-foot a{color:var(--brand);cursor:pointer}
           <li><strong>2022:</strong> ChatGPT macht erzeugende KI für alle nutzbar.</li>
         </ul>
         <p>Neu ist also nicht die Idee, sondern dass die Technik heute gut genug ist, um im Alltag zu funktionieren.</p>
+        <div id="akk-eliza"></div>
       </div>
     </details>
 
@@ -500,6 +557,13 @@ footer.app-foot a{color:var(--brand);cursor:pointer}
       <div class="sec-progress-bar"><div class="sec-progress-fill" id="sec-fill"></div></div>
       <div class="sec-progress-txt" id="sec-txt">0 von 0 bearbeitet</div>
     </div>
+  </div>
+
+  <div class="card">
+    <span class="tag">Aufwärmen</span>
+    <h3 style="margin-top:2px">Erst selbst formulieren</h3>
+    <p>Bevor es ins Quiz geht: Bau diesen Merksatz aus den Bausteinen. Tippe die passenden Bausteine in die Lücken.</p>
+    <div id="sb-warmup"></div>
   </div>
 
   <div class="card">
@@ -638,8 +702,11 @@ const ORAKEL = [
     why:"Genau darum geht es: Die KI wählt das wahrscheinlichste nächste Wort, nicht das längste oder erste." }
 ];
 
-// Token-Demo: Beispielsatz in Token zerlegt (| trennt Token, _ markiert Leerzeichen)
-const TOKEN_DEMO = ["Die","_","Liefer","ver","zöger","ung","_","ärgert","_","den","_","Kunden","."];
+// Token-Demo: derselbe Satz in zwei Sprachen, in Token zerlegt (_ markiert Leerzeichen)
+const TOKEN_DEMO = {
+  de: ["Die","_","Liefer","ver","zöger","ung","_","ärgert","_","den","_","Kunden","."],
+  en: ["The","_","delivery","_","delay","_","annoys","_","the","_","customer","."]
+};
 
 // Uebung 1: Erkennende vs. erzeugende KI
 const FAMILIE = [
@@ -755,6 +822,80 @@ const ABSCHLUSS = [
   }
 ];
 
+// Phase 5: Halluzination, Fehler im Text finden (eine Angabe ist erfunden)
+const FEHLER = {
+  segmente: [
+    "Der Begriff „künstliche Intelligenz“ wurde ",
+    { text:"1956", correct:false, why:"Stimmt, das Jahr lässt sich nachschlagen." },
+    " auf einer Konferenz in ",
+    { text:"Dartmouth", correct:false, why:"Korrekt und überprüfbar." },
+    " geprägt. Maßgeblich beteiligt war der Informatiker ",
+    { text:"John McCarthy", correct:false, why:"Korrekt, McCarthy gilt als einer der Begründer des Feldes." },
+    ", der dafür später den ",
+    { text:"Nobelpreis für Informatik", correct:true, why:"Treffer. Einen „Nobelpreis für Informatik“ gibt es nicht. Die KI hat eine plausibel klingende Auszeichnung erfunden, weil das Muster „berühmter Forscher → großer Preis“ wahrscheinlich wirkt. Sie hat nicht geprüft, ob es den Preis überhaupt gibt." },
+    " erhielt."
+  ],
+  realfall: {
+    titel:"Echter Fall: der erfundene Tarif von Air Canada",
+    text:"2024 verließ sich ein Kunde auf die Auskunft des Chatbots von Air Canada zu einem vergünstigten Tarif. Diese Regel gab es so gar nicht, der Chatbot hatte sie erfunden. Ein Gericht entschied: Das Unternehmen muss für die Falschauskunft seiner KI einstehen."
+  }
+};
+
+// Satzbausteine (Merksatz selbst bauen). bausteine = richtige Loesungen + Distraktoren.
+const SATZBAU = {
+  warmup: {
+    segmente:[ "Eine KI bildet ihre Antwort Wort für Wort: Sie wählt jeweils das ", {g:0}, " nächste Token und prüft dabei nicht, was ", {g:1}, " ist." ],
+    luecken:[ {loesung:"wahrscheinlichste"}, {loesung:"wahr"} ],
+    bausteine:["wahrscheinlichste","wahr","schnellste","schön"]
+  },
+  familie: {
+    segmente:[ "Erkennende KI ", {g:0}, " (A oder B?), erzeugende KI ", {g:1}, " (Text, Bild, Ton)." ],
+    luecken:[ {loesung:"ordnet ein"}, {loesung:"erstellt Neues"} ],
+    bausteine:["ordnet ein","erstellt Neues","prüft die Wahrheit","versteht den Sinn"]
+  }
+};
+
+// Phase 3: Vorhersage erkennend vs. erzeugend (eine Single-Choice-Frage)
+const VORHERSAGE = {
+  optionen: [
+    { text:"Erzeugende KI, sie erstellt etwas Neues.", correct:false },
+    { text:"Erkennende KI, sie ordnet ein: A oder B.", correct:true },
+    { text:"Beide gleichzeitig.", correct:false }
+  ],
+  aufloesung:"Erkennende KI. Sie erzeugt kein neues Bild, sondern entscheidet zwischen zwei Möglichkeiten. Erzeugend wäre der Auftrag „Male mir einen Hund.“"
+};
+
+// Mini-Quizze in den Akkordeons (je eine Frage)
+const AKK_QUIZ = {
+  token: {
+    frage:"Ein sehr langes Gespräch läuft weiter. Was passiert mit dem Anfang?",
+    optionen:[
+      { text:"Die KI speichert alles dauerhaft.", correct:false },
+      { text:"Er kann aus dem Kontextfenster fallen, die KI „vergisst“ ihn.", correct:true },
+      { text:"Die KI fragt selbstständig nach.", correct:false }
+    ],
+    loesung:"Das Kontextfenster fasst nur eine begrenzte Menge Token. Wird es voll, fällt der Anfang heraus."
+  },
+  agent: {
+    frage:"Ein KI-Agent erledigt mehrere Schritte selbstständig. Versteht er dabei mehr als ein normaler Chatbot?",
+    optionen:[
+      { text:"Ja, durch die Werkzeuge entsteht echtes Verstehen.", correct:false },
+      { text:"Nein, dahinter steckt dieselbe Wort-für-Wort-Maschine, nur in einer Schleife mit Werkzeugen.", correct:true },
+      { text:"Ja, ein Agent denkt wie ein Mensch.", correct:false }
+    ],
+    loesung:"Kein neues Verstehen. Ein Agent läuft in einer Schleife und nutzt Werkzeuge, das Sprachmodell dahinter bleibt dasselbe."
+  },
+  eliza: {
+    frage:"Warum hielten viele Menschen ELIZA (1966) für ein echtes Gegenüber?",
+    optionen:[
+      { text:"ELIZA verstand die Menschen wirklich.", correct:false },
+      { text:"ELIZA war mit dem Internet verbunden.", correct:false },
+      { text:"Schon einfache, plausibel wirkende Antwortmuster wirken auf uns menschlich.", correct:true }
+    ],
+    loesung:"ELIZA nutzte simple Muster. Dass es echt wirkte, zeigt: Ein überzeugender Eindruck ist kein Beleg für Verstehen."
+  }
+};
+
 const SELF_STUFEN = [
   { key:"sicher", label:"kann ich sicher", cls:"s-sicher" },
   { key:"unsicher", label:"bin unsicher", cls:"s-unsicher" },
@@ -782,6 +923,11 @@ let tfLocked = false;
 const secureState = SICHERUNG.map(() => ({ versuche:0, geloest:false, gewaehlt:null, aufgedeckt:false }));
 const checkState  = ABSCHLUSS.map(() => ({ gewaehlt:null }));
 let checkDone = false;
+
+const fehlerState = { versuche:0, geloest:false };   // Phase 5: Halluzination
+const vorhersageState = { gewaehlt:null, done:false }; // Phase 3: erkennend/erzeugend
+const satzbauState = {};   // containerId -> { filled:[], bank:[], done:false }
+let tokLang = "de";        // Phase 2: aktuelle Sprache der Token-Demo
 
 /* ============================================================
    HILFSFUNKTIONEN
@@ -927,12 +1073,192 @@ function pickOracle(i, maxP){
 }
 
 /* ============================================================
-   TOKEN-DEMO
+   TOKEN-DEMO (Deutsch / Englisch umschaltbar)
    ============================================================ */
+function tokenAnzahl(tokens){ return tokens.filter(t=>t!=="_").length; }
 function renderTokenDemo(){
-  $("tok-demo").innerHTML = TOKEN_DEMO.map(t=>
-    t==="_" ? `<span class="tok space"></span>` : `<span class="tok">${t}</span>`
+  $("tok-demo").innerHTML = TOKEN_DEMO[tokLang].map(t=>
+    t==="_" ? `<span class="tok space"></span>` : `<span class="tok">${escapeHtml(t)}</span>`
   ).join("");
+  $("tok-de").classList.toggle("sel", tokLang==="de");
+  $("tok-en").classList.toggle("sel", tokLang==="en");
+  const de = tokenAnzahl(TOKEN_DEMO.de), en = tokenAnzahl(TOKEN_DEMO.en);
+  $("tok-count").textContent = `Deutsch: ${de} Token · Englisch: ${en} Token. Dieselbe Aussage, im Deutschen mehr Token, vor allem weil „Lieferverzögerung“ in mehrere Bausteine zerfällt.`;
+}
+
+/* ============================================================
+   PHASE 5: HALLUZINATION, FEHLER IM TEXT FINDEN
+   ============================================================ */
+function renderFehler(){
+  let k = -1;
+  const html = FEHLER.segmente.map(seg=>{
+    if(typeof seg === "string") return escapeHtml(seg);
+    k++;
+    return `<button type="button" class="find-span" data-k="${k}" ${fehlerState.geloest?"disabled":""}>${escapeHtml(seg.text)}</button>`;
+  }).join("");
+  $("fehler-ui").innerHTML = html;
+  $("fehler-ui").querySelectorAll(".find-span").forEach(b=>{
+    b.addEventListener("click",()=>pickFehler(parseInt(b.dataset.k,10), b));
+  });
+}
+function kandidaten(){ return FEHLER.segmente.filter(s=>typeof s!=="string"); }
+function pickFehler(k, btn){
+  if(fehlerState.geloest) return;
+  const cand = kandidaten()[k];
+  const fb = $("fehler-fb");
+  if(cand.correct){
+    fehlerState.geloest = true;
+    btn.classList.add("correct");
+    $("fehler-ui").querySelectorAll(".find-span").forEach(b=> b.disabled=true);
+    fb.className = "fb show ok";
+    fb.textContent = cand.why;
+    showFehlerCase();
+  } else {
+    fehlerState.versuche++;
+    btn.classList.add("wrong"); btn.disabled = true;
+    fb.className = "fb show tip";
+    fb.textContent = cand.why + " Suche weiter: Welche Angabe könntest du nirgends nachschlagen?";
+    if(fehlerState.versuche>=3 && !fehlerState.geloest){
+      const korrektK = kandidaten().findIndex(c=>c.correct);
+      const korrektBtn = $("fehler-ui").querySelectorAll(".find-span")[korrektK];
+      if(korrektBtn){ korrektBtn.classList.add("correct"); }
+      fehlerState.geloest = true;
+      $("fehler-ui").querySelectorAll(".find-span").forEach(b=> b.disabled=true);
+      fb.className = "fb show info";
+      fb.innerHTML = "Kein Problem. Erfunden ist der <strong>Nobelpreis für Informatik</strong>. Den gibt es nicht, die KI hat ihn plausibel erfunden. (McCarthy erhielt den Turing Award, die wichtigste Auszeichnung der Informatik.)";
+      showFehlerCase();
+    }
+  }
+}
+function showFehlerCase(){
+  const c = FEHLER.realfall;
+  $("fehler-case").style.display = "block";
+  $("fehler-case").innerHTML = `<div class="case"><span class="ic">⚖️</span><div><h4>${escapeHtml(c.titel)}</h4><p>${escapeHtml(c.text)}</p></div></div>`;
+}
+
+/* ============================================================
+   PHASE 3: VORHERSAGE erkennend vs. erzeugend
+   ============================================================ */
+function renderVorhersage(){
+  $("vorhersage-ui").innerHTML = VORHERSAGE.optionen.map((o,oi)=>{
+    let cls = "opt-btn";
+    if(vorhersageState.done){
+      if(o.correct) cls += " cor";
+      else if(vorhersageState.gewaehlt===oi) cls += " wrg";
+    } else if(vorhersageState.gewaehlt===oi) cls += " sel";
+    return `<button type="button" class="${cls}" data-o="${oi}" ${vorhersageState.done?"disabled":""}>${o.text}</button>`;
+  }).join("");
+  if(!vorhersageState.done){
+    $("vorhersage-ui").querySelectorAll(".opt-btn").forEach(b=>{
+      b.addEventListener("click",()=>pickVorhersage(parseInt(b.dataset.o,10)));
+    });
+  }
+}
+function pickVorhersage(oi){
+  if(vorhersageState.done) return;
+  vorhersageState.gewaehlt = oi;
+  vorhersageState.done = true;
+  renderVorhersage();
+  const richtig = VORHERSAGE.optionen[oi].correct;
+  const fb = $("vorhersage-fb");
+  fb.className = "fb show " + (richtig?"ok":"info");
+  fb.textContent = (richtig ? "Gute Vorhersage. " : "Nicht ganz. ") + VORHERSAGE.aufloesung;
+  $("vorhersage-after").style.display = "block";
+  renderSatzbau("sb-familie", "familie");
+}
+
+/* ============================================================
+   MINI-QUIZ (eine Frage, fuer Akkordeons), wiederverwendbar
+   ============================================================ */
+function miniQuiz(containerId, q){
+  const box = $(containerId);
+  if(!box) return;
+  box.innerHTML = `
+    <div class="mini-q">${q.frage}</div>
+    <div class="opt-list">
+      ${q.optionen.map((o,oi)=>`<button type="button" class="opt-btn" data-o="${oi}">${o.text}</button>`).join("")}
+    </div>
+    <div class="fb" id="${containerId}-fb"></div>`;
+  box.querySelectorAll(".opt-btn").forEach(b=>{
+    b.addEventListener("click",()=>{
+      if(box.dataset.done) return;
+      box.dataset.done = "1";
+      const oi = parseInt(b.dataset.o,10);
+      box.querySelectorAll(".opt-btn").forEach((bb,bi)=>{
+        bb.disabled = true;
+        if(q.optionen[bi].correct) bb.classList.add("cor");
+        else if(bi===oi) bb.classList.add("wrg");
+      });
+      const fb = $(containerId+"-fb");
+      fb.className = "fb show " + (q.optionen[oi].correct?"ok":"info");
+      fb.textContent = (q.optionen[oi].correct?"Richtig. ":"Nicht ganz. ") + q.loesung;
+    });
+  });
+}
+
+/* ============================================================
+   SATZBAUSTEINE (Merksatz selbst bauen), wiederverwendbar
+   ============================================================ */
+function renderSatzbau(containerId, key){
+  const data = SATZBAU[key];
+  if(!satzbauState[containerId]){
+    satzbauState[containerId] = {
+      filled: data.luecken.map(()=>null),
+      bank: shuffle([...data.bausteine]),
+      done: false
+    };
+  }
+  const st = satzbauState[containerId];
+  const sentence = data.segmente.map(seg=>{
+    if(typeof seg === "string") return escapeHtml(seg);
+    const gi = seg.g;
+    const val = st.filled[gi];
+    let cls = "sb-gap" + (val!==null?" filled":"");
+    if(st.done){ cls += (val===data.luecken[gi].loesung) ? " ok" : " no"; }
+    return `<button type="button" class="${cls}" data-gap="${gi}" ${st.done?"disabled":""}>${val!==null?escapeHtml(val):"&nbsp;&nbsp;&nbsp;&nbsp;"}</button>`;
+  }).join("");
+  const used = st.filled.filter(v=>v!==null);
+  const tiles = st.bank.map(w=>{
+    const isUsed = used.includes(w);
+    return `<button type="button" class="sb-tile ${isUsed?"used":""}" data-word="${escapeHtml(w)}" ${st.done||isUsed?"disabled":""}>${escapeHtml(w)}</button>`;
+  }).join("");
+  $(containerId).innerHTML = `
+    <div class="sb-card">
+      <div class="sb-sentence">${sentence}</div>
+      <div class="sb-bank">${tiles}</div>
+      <div class="fb" id="${containerId}-fb"></div>
+    </div>`;
+  if(st.done) return;
+  $(containerId).querySelectorAll(".sb-gap").forEach(b=>{
+    b.addEventListener("click",()=>{ const gi=parseInt(b.dataset.gap,10); if(st.filled[gi]!==null){ st.filled[gi]=null; renderSatzbau(containerId,key);} });
+  });
+  $(containerId).querySelectorAll(".sb-tile").forEach(b=>{
+    b.addEventListener("click",()=>{
+      const w = b.dataset.word;
+      const next = st.filled.findIndex(v=>v===null);
+      if(next===-1) return;
+      st.filled[next] = w;
+      const allFilled = st.filled.every(v=>v!==null);
+      renderSatzbau(containerId,key);
+      if(allFilled) checkSatzbau(containerId,key);
+    });
+  });
+}
+function checkSatzbau(containerId, key){
+  const data = SATZBAU[key];
+  const st = satzbauState[containerId];
+  const allOk = st.filled.every((v,i)=> v===data.luecken[i].loesung);
+  const fb = $(containerId+"-fb");
+  if(allOk){
+    st.done = true;
+    renderSatzbau(containerId,key);
+    const f = $(containerId+"-fb");
+    f.className = "fb show ok";
+    f.textContent = "Genau so. Gut formuliert.";
+  } else {
+    fb.className = "fb show tip";
+    fb.textContent = "Noch nicht ganz. Tippe eine Lücke an, um sie wieder zu leeren, und probiere eine andere Reihenfolge.";
+  }
 }
 
 /* ============================================================
@@ -1118,7 +1444,7 @@ function secureAnswer(qi, oi){
     }
   }
 }
-function escapeHtml(s){ return s.replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+function escapeHtml(s){ return String(s).replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
 function secureFertig(){ return secureState.every(s=>s.geloest||s.aufgedeckt); }
 function updateSecureProgress(){
   const done = secureState.filter(s=>s.geloest||s.aufgedeckt).length;
@@ -1309,8 +1635,14 @@ function init(){
   renderSelf("self-after", selfAfter, true);
   renderOracle();
   renderTokenDemo();
+  renderVorhersage();
   renderFamilie();
   renderTF();
+  renderFehler();
+  miniQuiz("akk-token", AKK_QUIZ.token);
+  miniQuiz("akk-agent", AKK_QUIZ.agent);
+  miniQuiz("akk-eliza", AKK_QUIZ.eliza);
+  renderSatzbau("sb-warmup", "warmup");
   renderSecure();
   renderCheck();
   renderProgress();
@@ -1323,6 +1655,10 @@ function init(){
   $("p4-next").addEventListener("click",()=>goTo(5));
   $("p5-next").addEventListener("click",()=>goTo(6));
   document.querySelectorAll("[data-back]").forEach(b=> b.addEventListener("click",()=>goTo(current-1)));
+
+  // Token-Demo umschalten (Deutsch / Englisch)
+  $("tok-de").addEventListener("click",()=>{ tokLang="de"; renderTokenDemo(); });
+  $("tok-en").addEventListener("click",()=>{ tokLang="en"; renderTokenDemo(); });
 
   // Uebungen
   $("assign-check").addEventListener("click",checkFamilie);

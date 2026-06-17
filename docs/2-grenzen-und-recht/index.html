@@ -516,26 +516,24 @@ footer.app-foot a{color:var(--brand);cursor:pointer}
 
   <div class="legal-view" id="impressum">
     <h2>Impressum</h2>
-    <p>Angaben gemäß den geltenden Vorschriften. Bitte von der verantwortlichen Stelle ausfüllen:</p>
+    <p>Verantwortlich für Inhalt und Bearbeitung:</p>
     <p>
-      [Name der Schule / verantwortliche Person]<br>
-      [Anschrift]<br>
-      [Kontakt: E-Mail / Telefon]<br>
-      [Verantwortlich für den Inhalt]
+      Martin Kurz<br>
+      <a href="mailto:martin@kurz.net">martin@kurz.net</a>
     </p>
     <p><strong>Inhaltlicher Hinweis:</strong> Lernmodul zu Grenzen, Risiken und Recht von KI (Teil 2 des Grundlagenkurses). Erstellt für den Unterricht in der Sekundarstufe II (allgemeinbildende Oberstufe und Berufsschule).</p>
-    <p><strong>Herkunft und Lizenz:</strong> Dieses Modul ist eine Bearbeitung von Inhalten des KI-Grundlagenkurses der Richard-Müller-Schule Fulda (Autorin: Marina Boonyaprasop-Meister). Die Autorin hat das Ausgangsmaterial unter CC BY-SA 4.0 freigegeben. Bearbeitung, Aufteilung und Gestaltung dieses Moduls: [verantwortliche Person, siehe oben]. Die Bearbeitung steht ebenfalls unter <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.de" target="_blank" rel="noopener">CC BY-SA 4.0</a>.</p>
+    <p><strong>Herkunft und Lizenz:</strong> Dieses Modul ist eine Bearbeitung von Inhalten des KI-Grundlagenkurses der Richard-Müller-Schule Fulda (Autorin: Marina Boonyaprasop-Meister). Die Autorin hat das Ausgangsmaterial unter CC BY-SA 4.0 freigegeben. Bearbeitung, Aufteilung und Gestaltung dieses Moduls: Martin Kurz. Die Bearbeitung steht ebenfalls unter <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.de" target="_blank" rel="noopener">CC BY-SA 4.0</a>.</p>
     <a class="legal-back" href="#">← Zurück zum Modul</a>
   </div>
 
   <div class="legal-view" id="datenschutz">
     <h2>Datenschutz im Detail</h2>
     <h3>Verantwortlicher</h3>
-    <p>[Name und Kontakt der verantwortlichen Person oder Institution, siehe Impressum]</p>
+    <p>Martin Kurz, <a href="mailto:martin@kurz.net">martin@kurz.net</a></p>
     <h3>Welche Daten verarbeitet diese Lernumgebung?</h3>
     <p>Keine personenbezogenen Daten. Es gibt keine Cookies, kein Tracking, keine Analyse-Werkzeuge und keine externen Ressourcen (keine fremden Schriften, Skripte, Bilder oder Videos). Alle Eingaben, etwa Antworten oder Reflexionstexte, bleiben ausschließlich in deinem Browser und werden mit dem Schließen der Seite gelöscht. Es findet keine Übertragung an einen Server oder an Dritte statt.</p>
     <h3>Hosting und Datentransfer</h3>
-    <p>[Wahrheitsgemäß ergänzen, je nach Veröffentlichung. Beispiel bei GitHub Pages: „Diese Seite wird über GitHub Pages bereitgestellt. Beim Aufruf wird technisch bedingt deine IP-Adresse an den Hoster (ein US-Anbieter) übertragen, um die Seite auszuliefern." Bei einem Schul- oder EU-Server stattdessen diesen beschreiben.]</p>
+    <p>Diese Seite wird über GitHub Pages (GitHub Inc., ein US-Anbieter) bereitgestellt. Beim Aufruf wird technisch bedingt deine IP-Adresse an den Hoster übertragen, damit die Seite ausgeliefert werden kann. Darüber hinaus werden keine Daten erhoben, gespeichert oder an Dritte weitergegeben.</p>
     <h3>Deine Rechte</h3>
     <p>Dir stehen die Rechte auf Auskunft, Berichtigung und Löschung sowie ein Beschwerderecht bei der zuständigen Aufsichtsbehörde zu. In Hessen ist das der Hessische Beauftragte für Datenschutz und Informationsfreiheit.</p>
     <p class="muted">Dies ist eine fachliche Orientierung, kein anwaltlicher Rat. Im Zweifel wende dich an die zuständige Stelle deiner Schule oder Schulbehörde.</p>
@@ -1554,7 +1552,7 @@ function buildMarkdown(){
     if(r1) md += `**Risiko, auf das ich achte:** ${r1}\n\n`;
     if(r2) md += `**Wo ich noch unsicher bin:** ${r2}\n`;
   }
-  md += `\n## Weiterarbeit\nDiese Zusammenfassung kann als Grundlage für die Weiterarbeit mit einer generativen KI (z. B. Claude) verwendet werden, etwa zum Erstellen von:\n- Lernquiz\n- Interaktiven Lernkarten (Flashcards)\n- Podcasts oder Erklärvideos\n- Infografiken\n- Individuellen Übungsaufgaben\n`;
+  md += `\n## Weiterarbeit\nDiese Zusammenfassung kann als Grundlage für die Weiterarbeit mit einer generativen KI verwendet werden (zum Beispiel über https://duck.ai, dort ohne Konto und ohne Eingabe persönlicher Daten nutzbar), etwa zum Erstellen von:\n- Lernquiz\n- Interaktiven Lernkarten (Flashcards)\n- Podcasts oder Erklärvideos\n- Infografiken\n- Individuellen Übungsaufgaben\n`;
   return { md, name:`Grenzen-Risiken-Recht_Zusammenfassung_${d.iso}.md` };
 }
 function downloadMarkdown(){

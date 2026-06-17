@@ -6,6 +6,9 @@
 # Lokale Ergänzung mit personenbezogenen Kontaktdaten
 CLAUDE.local.md
 
+# Projekt-Instruktionen mit institutionellem Bezug: bleiben lokal, nicht im öffentlichen Repo
+CLAUDE.md
+
 # macOS
 .DS_Store
 

@@ -35,8 +35,7 @@ Nie direkt in `docs/` editieren, immer im jeweiligen Modulordner.
 
 ## Lizenz und Herkunft
 
-- **Inhalte:** [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.de)
-- **Code:** MIT (siehe `LICENSE`)
+- **Inhalte und Code:** [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.de) (siehe `LICENSE`)
 
 Dieser Kurs ist eine Bearbeitung und Aufteilung des KI-Grundlagenkurses der
 **Richard-Müller-Schule Fulda** (Autorin: **Marina Boonyaprasop-Meister**). Die Autorin hat das

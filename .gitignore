@@ -12,10 +12,12 @@ CLAUDE.md
 # macOS
 .DS_Store
 
-# Editor: Verzeichnis ignorieren, aber geteilte Erweiterungs-Empfehlungen freigeben
-.vscode/*
-!.vscode/extensions.json
+# Editor
+.vscode/
 .idea/
+
+# Lokale Claude-Code-Einstellungen
+.claude/
 
 # Privater Arbeitsbereich: bleibt lokal, wird nie versioniert oder veröffentlicht.
 # Greift in jeder Ebene, also auch in den Thementeil-Unterordnern.

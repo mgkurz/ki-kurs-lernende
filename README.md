@@ -1,37 +1,37 @@
 # Künstliche Intelligenz verstehen — Grundlagenkurs (OER)
 
-Interaktiver Grundlagenkurs zu Künstlicher Intelligenz in vier eigenständigen Teilen plus
-Übersicht. Jedes Modul ist eine datenschutzkonforme Single-File-HTML-Anwendung ohne externe
-Abhängigkeiten (keine CDNs, Fonts, Tracker). Zielgruppe: Sekundarstufe II und Berufsschule.
+Interaktiver Grundlagenkurs zu Künstlicher Intelligenz in vier Teilen, die in einem Rutsch
+durchgearbeitet werden. Der gesamte Kurs ist eine einzige datenschutzkonforme
+Single-File-HTML-Anwendung ohne externe Abhängigkeiten (keine CDNs, Fonts, Tracker).
+Am Kursende stehen ein gemeinsamer Lernzettel (Markdown) und eine Teilnahmebescheinigung.
+Zielgruppe: Sekundarstufe II und Berufsschule.
 
 ## Aufbau
 
-Jeder Teil liegt in einem eigenen Ordner und enthält seine Quelle (`index.html`) und seine
-Arbeitsdateien (`workbench/`) zusammen. Der Ordner `docs/` ist der **veröffentlichte Mirror** und
-wird per `./build.sh` erzeugt. GitHub Pages serviert ausschließlich `docs/`; die `workbench/`-Ordner
-sind nicht Teil der Live-Seite.
+Der Kurs ist **eine** Datei: `kurs/index.html`. Sie enthält eine kurze Einführung und die vier
+Teile als nacheinander freigeschaltete Abschnitte (Wie funktioniert KI? · Grenzen, Risiken und
+Recht · KI richtig nutzen · Zukunft, Transfer und Abschluss). Der Ordner `docs/` ist der
+**veröffentlichte Mirror** und wird per `./build.sh` erzeugt. GitHub Pages serviert ausschließlich
+`docs/`.
 
-```
-0-uebersicht/        Übersicht / Landing (wird zu docs/index.html)
-1-wie-funktioniert-ki/   Teil 1 (fertig)
-2-grenzen-und-recht/     Teil 2 (in Arbeit)
-3-ki-nutzen/             Teil 3 (in Arbeit)
-4-zukunft-transfer/      Teil 4 (in Arbeit)
-workbench/           geteiltes Material (Original, Analyse, Regeln)
-docs/                veröffentlichter Mirror — NICHT direkt editieren
-build.sh             erzeugt docs/ aus den Modulordnern
+```text
+kurs/index.html      DIE Quelle — hier wird gearbeitet
+docs/index.html      veröffentlichter Mirror — NICHT direkt editieren (= Kopie von kurs/)
+build.sh             kopiert kurs/index.html → docs/index.html
+workbench/           Material (Original, Analyse, Regeln)
+  archiv-4-teile/    die ehemals getrennten Modul-Ordner (vor dem Merge), archiviert
 ```
 
 ## Veröffentlichen
 
 ```sh
-./build.sh                  # Modul-index.html → docs/ spiegeln
+./build.sh                  # kurs/index.html → docs/index.html spiegeln
 git add -A && git commit    # Änderungen versionieren
 # später: git push, dann GitHub Pages auf Branch main, Ordner /docs stellen
 ```
 
 **Wichtig:** Vor jedem Veröffentlichen `./build.sh` laufen lassen, sonst ist `docs/` veraltet.
-Nie direkt in `docs/` editieren, immer im jeweiligen Modulordner.
+Nie direkt in `docs/` editieren, immer in `kurs/index.html`.
 
 ## Lizenz und Herkunft
 

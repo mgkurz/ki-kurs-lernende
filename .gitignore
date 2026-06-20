@@ -19,6 +19,9 @@ CLAUDE.md
 # Lokale Claude-Code-Einstellungen
 .claude/
 
+# Playwright-MCP-Artefakte (Test-Snapshots aus lokalen Analysen, bleiben lokal)
+.playwright-mcp/
+
 # Privater Arbeitsbereich: bleibt lokal, wird nie versioniert oder veröffentlicht.
 # Greift in jeder Ebene, also auch in den Thementeil-Unterordnern.
 workbench/
